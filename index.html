@@ -715,15 +715,11 @@
         async function showAppContent() {
             const btn = document.getElementById('login-btn');
             if (btn) { btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline-block"></i> CARGANDO SISTEMA...'; btn.disabled = true; lucide.createIcons(); }
-            await fetchInitialData();
-            document.getElementById('login-container').classList.add('hidden');
-            const app = document.getElementById('app-container');
-            app.classList.remove('hidden');
-            setTimeout(() => app.classList.remove('opacity-0'), 50);
+            
+            fetchInitialData();
             
             if (pollingInterval) clearInterval(pollingInterval);
             pollingInterval = setInterval(fetchInitialData, 30000); 
-            switchView('home');
         }
 
         function showLoginScreen() {
@@ -756,6 +752,15 @@
             if(statusEl) statusEl.innerText = `${currentUserName.toUpperCase()} (${currentUserRole.toUpperCase()})`;
             document.getElementById('cloud-status').classList.remove('hidden');
             
+            const loginBox = document.getElementById('login-container');
+            if (!loginBox.classList.contains('hidden')) {
+                loginBox.classList.add('hidden');
+                const app = document.getElementById('app-container');
+                app.classList.remove('hidden');
+                setTimeout(() => app.classList.remove('opacity-0'), 50);
+                switchView('home');
+            }
+
             const [inv, ln, art, ent, sal] = await Promise.all([
                 supabaseClient.from('inventory').select('*').order('nombre'),
                 supabaseClient.from('registro_prestamos').select('*').order('created_at', { ascending: false }),
