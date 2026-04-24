@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrega de Herramientas</title>
+    
+    <!-- Íconos para Acceso Directo (PWA / Pantalla de Inicio) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%230f172a'/%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%230f172a'/%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <meta name="apple-mobile-web-app-title" content="Herramientas">
+    <meta name="theme-color" content="#0f172a">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .modal-enter { animation: fadeIn 0.15s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+        input:not([type="number"]):not([type="file"]):not([type="hidden"]), textarea {
+            text-transform: uppercase;
+        }
+
+        .tool-card:hover { transform: translateY(-1px); }
+
+        @keyframes pulse-red {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-alert { animation: pulse-red 1.5s infinite ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans h-screen flex flex-col overflow-hidden text-sm">
+
+    <!-- ============================================== -->
+    <!-- PANTALLA DE LOGIN                              -->
+    <!-- ============================================== -->
+    <div id="login-container" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm flex flex-col items-center border border-slate-700/50">
+            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 gap-1 shadow-inner">
+                <i data-lucide="hammer" class="w-6 h-6"></i>
+            </div>
+            <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-1 text-center">Entrega de Herramientas</h2>
+            <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-5">Acceso Restringido</p>
+            
+            <form id="form-login" onsubmit="handleLogin(event)" class="w-full space-y-3">
+                <div>
+                    <label class="block text-[9px] font-black text-slate-400 mb-1 uppercase tracking-widest">Correo Electrónico</label>
+                    <input type="email" id="login-email" required class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 text-xs lowercase" placeholder="usuario@empresa.com">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black text-slate-400 mb-1 uppercase tracking-widest">Contraseña</label>
+                    <div class="relative">
+                        <input type="password" id="login-pass" required class="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 text-xs" placeholder="••••••••">
+                        <button type="button" onclick="togglePasswordVisibility('login-pass', 'login-eye-icon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 transition" tabindex="-1">
+                            <i id="login-eye-icon" data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <p id="login-error" class="text-[10px] text-red-600 font-bold text-center uppercase hidden"></p>
+                <button type="submit" id="login-btn" class="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-lg hover:bg-blue-700 transition flex justify-center items-center gap-1.5 mt-2">
+                    INICIAR SESIÓN
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- CONTENEDOR PRINCIPAL                           -->
+    <!-- CONTENEDOR PRINCIPAL DE LA APP -->
+    <div id="app-container" class="flex-1 flex flex-col h-full hidden opacity-0 transition-opacity duration-300">
+        
+        <!-- BARRA DE NAVEGACIÓN -->
+        <nav class="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 shadow-md flex justify-between items-center z-30 sticky top-0 overflow-x-auto whitespace-nowrap">
+            <div class="flex items-center gap-2 sm:gap-3 mr-3">
+                <div class="flex items-center gap-1 text-blue-400 shrink-0 bg-slate-800/50 p-1.5 rounded-lg border border-slate-700/50 shadow-inner">
+                    <i data-lucide="hammer" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                    <i data-lucide="wrench" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                </div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-sm sm:text-base font-bold tracking-wide hidden sm:block uppercase ml-1">Entrega de Herramientas</h1>
+                    <span id="cloud-status" class="!hidden items-center gap-1 text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700 transition-colors uppercase font-black shrink-0 max-w-[130px] md:max-w-[250px]">
+                        <i data-lucide="cloud" class="w-3 h-3 shrink-0"></i> <span class="truncate text-[8px]" id="status-user-name">CONECTANDO...</span>
+                    </span>
+                    <button onclick="toggleFullScreen()" class="text-slate-400 hover:text-blue-400 transition flex items-center justify-center p-1 rounded hover:bg-slate-800 shrink-0 ml-1" title="PANTALLA COMPLETA">
+                        <i id="fs-icon" data-lucide="maximize" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 transition flex items-center justify-center p-1 rounded hover:bg-slate-800 shrink-0 ml-1" title="CERRAR SESIÓN">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex gap-1 sm:gap-1.5">
+                <button onclick="switchView('home')" id="tab-home" class="px-2 sm:px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-white uppercase tracking-wider shadow-sm">
+                    <i data-lucide="home" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">INICIO</span>
+                </button>
+                <button onclick="switchView('inventory')" id="tab-inventory" class="hide-from-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
+                    <i data-lucide="package" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">HERRAMIENTAS</span><span class="sm:hidden">HERR.</span>
+                </button>
+                <button onclick="switchView('loans')" id="tab-loans" class="hide-from-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
+                    <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">PRÉSTAMOS</span><span class="sm:hidden">PRÉST.</span>
+                </button>
+                <button onclick="switchView('sales')" id="tab-sales" class="admin-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">CONSUMIBLES</span><span class="sm:hidden">CONS.</span>
+                </button>
+                <button onclick="switchView('reports')" id="tab-reports" class="admin-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">REPORTES</span><span class="sm:hidden">REP.</span>
+                </button>
+                <button onclick="switchView('users')" id="tab-users" class="admin-only px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
+                    <i data-lucide="users" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">USUARIOS</span><span class="sm:hidden">USR.</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- VISTAS PRINCIPALES -->
+        <main class="flex-1 overflow-auto relative bg-slate-100">
+            
+            <!-- VISTA: INICIO -->
+            <section id="view-home" class="max-w-6xl mx-auto block px-3 sm:px-6 py-4 sm:py-6">
+                <div class="mb-5">
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-800 uppercase tracking-tight">Bienvenido a Entrega de Herramientas</h2>
+                    <p class="text-xs text-slate-500 mt-1 uppercase font-medium tracking-wide">Panel de Gestión Centralizado</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <div onclick="switchView('inventory')" class="hide-from-supervisor bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md hover:border-blue-300 transition group">
+                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-105 transition transform"><i data-lucide="package" class="w-5 h-5"></i></div>
+                        <h3 class="text-sm font-black text-slate-800 uppercase mb-1 tracking-wide">Herramientas</h3>
+                        <div class="flex items-center justify-between border-t border-slate-100 pt-2.5">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">En sistema:</span>
+                            <span id="stat-total-tools" class="text-sm font-black text-blue-600">0</span>
+                        </div>
+                    </div>
+                    <div onclick="switchView('loans')" class="hide-from-supervisor bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md hover:border-emerald-300 transition group">
+                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-105 transition transform"><i data-lucide="clipboard-list" class="w-5 h-5"></i></div>
+                        <h3 class="text-sm font-black text-slate-800 uppercase mb-1 tracking-wide">Préstamos</h3>
+                        <div class="flex items-center justify-between border-t border-slate-100 pt-2.5">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Activos:</span>
+                            <span id="stat-pending-loans" class="text-sm font-black text-emerald-600">0</span>
+                        </div>
+                    </div>
+                    <div onclick="switchView('sales')" class="admin-supervisor bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md hover:border-indigo-300 transition group">
+                        <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-105 transition transform"><i data-lucide="shopping-cart" class="w-5 h-5"></i></div>
+                        <h3 class="text-sm font-black text-slate-800 uppercase mb-1 tracking-wide">Consumibles</h3>
+                        <div class="flex items-center justify-between border-t border-slate-100 pt-2.5">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Artículos:</span>
+                            <span id="stat-total-sales" class="text-sm font-black text-indigo-600">0</span>
+                        </div>
+                    </div>
+                    <div onclick="switchView('users')" class="admin-only bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md hover:border-purple-300 transition group">
+                        <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-105 transition transform"><i data-lucide="users" class="w-5 h-5"></i></div>
+                        <h3 class="text-sm font-black text-slate-800 uppercase mb-1 tracking-wide">Usuarios</h3>
+                        <div class="flex items-center justify-between border-t border-slate-100 pt-2.5">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Registrados:</span>
+                            <span id="stat-total-users" class="text-sm font-black text-purple-600">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">ACCIONES RÁPIDAS</h4>
+                    <div class="hide-from-supervisor flex flex-col sm:flex-row gap-2 sm:gap-3 mb-2 sm:mb-3">
+                        <button onclick="openModal('modal-tool')" class="admin-only flex-1 bg-blue-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-blue-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
+                            <i data-lucide="plus-square" class="w-4 h-4"></i> AGREGAR HERRAMIENTA
+                        </button>
+                        <button onclick="openModal('modal-loan')" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i> NUEVO PRÉSTAMO
+                        </button>
+                    </div>
+                    <div class="admin-supervisor flex flex-col sm:flex-row gap-2 sm:gap-3">
+                        <button onclick="openModal('modal-sales-input')" class="admin-only flex-1 bg-indigo-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-indigo-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
+                            <i data-lucide="package-plus" class="w-4 h-4"></i> REGISTRAR ENTRADA
+                        </button>
+                        <button onclick="openModal('modal-sales-output')" class="flex-1 bg-orange-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-orange-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
+                            <i data-lucide="package-minus" class="w-4 h-4"></i> REGISTRAR SALIDA
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA: HERRAMIENTAS -->
+            <section id="view-inventory" class="max-w-6xl mx-auto hidden w-full">
+                <div class="sticky top-0 z-20 bg-slate-100 border-b border-slate-200 px-3 sm:px-6 py-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mb-3">
+                        <div>
+                            <h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Inventario Maestro</h2>
+                            <p class="text-slate-500 text-[10px] sm:text-xs mt-0.5 uppercase italic">Toca una herramienta para ver detalles.</p>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button onclick="exportToExcel('herramientas')" class="admin-only flex-1 sm:flex-none bg-emerald-600 text-white px-2.5 py-1.5 rounded-md hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> EXPORTAR
+                            </button>
+                            <button onclick="openModal('modal-tool')" class="admin-only flex-1 sm:flex-none bg-blue-600 text-white px-2.5 py-1.5 rounded-md hover:bg-blue-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i> AGREGAR
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                        </div>
+                        <input type="text" id="inventory-search" oninput="renderInventory()" class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-white shadow-sm text-xs" placeholder="BUSCAR HERRAMIENTA...">
+                    </div>
+                </div>
+                <div id="inventory-container" class="w-full px-3 sm:px-6 py-4">
+                    <div id="inventory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+                    <div id="empty-inventory" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 w-full">
+                        <p class="uppercase text-xs font-bold tracking-widest">VACÍO</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA: PRÉSTAMOS -->
+            <section id="view-loans" class="max-w-6xl mx-auto hidden w-full">
+                <div class="sticky top-0 z-20 bg-slate-100 border-b border-slate-200 px-3 sm:px-6 py-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mb-3">
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Préstamos Pendientes</h2>
+                        <button onclick="openModal('modal-loan')" class="w-full sm:w-auto bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> NUEVO PRÉSTAMO
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                        </div>
+                        <input type="text" id="loans-search" oninput="renderLoans()" class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-white shadow-sm text-xs uppercase" placeholder="BUSCAR SOLICITANTE...">
+                    </div>
+                </div>
+                <div id="loans-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-3 sm:px-6 py-4 pb-20"></div>
+                <div id="empty-loans" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 w-full mt-3 mx-3 sm:mx-6 w-[calc(100%-24px)] sm:w-[calc(100%-48px)]">
+                    <p class="uppercase text-xs font-bold tracking-widest">SIN PRÉSTAMOS ACTIVOS.</p>
+                </div>
+            </section>
+
+            <!-- VISTA: CONSUMIBLES -->
+            <section id="view-sales" class="max-w-6xl mx-auto hidden w-full">
+                <div class="sticky top-0 z-20 bg-slate-100 border-b border-slate-200 px-3 sm:px-6 py-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mb-3">
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Catálogo de Consumibles</h2>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button onclick="exportToExcel('consumibles')" class="admin-only flex-1 sm:flex-none bg-emerald-600 text-white px-2.5 py-1.5 rounded-md hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase"><i data-lucide="download" class="w-3.5 h-3.5"></i> EXPORTAR</button>
+                            <button onclick="openModal('modal-sales-item')" class="admin-only flex-1 sm:flex-none bg-slate-800 text-white px-2.5 py-1.5 rounded-md hover:bg-slate-900 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase"><i data-lucide="plus" class="w-3.5 h-3.5"></i> NUEVO ART.</button>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                        </div>
+                        <input type="text" id="sales-search" oninput="renderSalesCatalog()" class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-white shadow-sm text-xs uppercase" placeholder="BUSCAR ARTÍCULO...">
+                    </div>
+                </div>
+                <div id="sales-container" class="w-full px-3 sm:px-6 py-4">
+                    <div id="sales-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
+                    <div id="empty-sales" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 w-full">
+                        <p class="uppercase text-xs font-bold tracking-widest">SIN ARTÍCULOS.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA: REPORTES -->
+            <section id="view-reports" class="max-w-6xl mx-auto hidden w-full px-3 sm:px-6 py-4 pb-20">
+                <div class="mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight uppercase leading-none">REPORTES</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <select id="filter-user" onchange="renderReports()" class="admin-only flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">TODOS LOS USUARIOS</option>
+                        </select>
+                        <select id="filter-day" onchange="renderReports()" class="flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="all">TODOS</option>
+                        </select>
+                        <select id="filter-month" onchange="renderReports()" class="flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option><option value="04">Abril</option>
+                            <option value="05">Mayo</option><option value="06">Junio</option><option value="07">Julio</option><option value="08">Agosto</option>
+                            <option value="09">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                        </select>
+                        <select id="filter-year" onchange="renderReports()" class="flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-indigo-100 flex flex-col items-center">
+                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1 text-center">PEDIDOS</span>
+                        <span id="rep-stat-total" class="text-lg font-black text-indigo-600">0</span>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-emerald-100 flex flex-col items-center">
+                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1 text-center">UNIDADES</span>
+                        <span id="rep-stat-units" class="text-lg font-black text-emerald-600">0</span>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center col-span-2">
+                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1 text-center">TOP ARTÍCULO</span>
+                        <span id="rep-stat-top" class="text-[10px] font-black text-slate-800 uppercase truncate max-w-full">SIN DATOS</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px] border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 font-black text-slate-400 uppercase tracking-tighter border-b border-slate-200">
+                                    <th class="p-3">FECHA</th>
+                                    <th class="p-3">ARTÍCULO</th>
+                                    <th class="p-3 text-center">CANT</th>
+                                    <th class="p-3">RECIBE</th>
+                                    <th class="p-3">SUPERVISOR</th>
+                                    <th class="p-3 text-right admin-only w-16"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-table-body" class="divide-y divide-slate-100 font-bold text-slate-700 uppercase"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA: USUARIOS -->
+            <section id="view-users" class="max-w-4xl mx-auto hidden w-full px-3 sm:px-6 py-4 pb-20">
+                <form id="form-user" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-5" onsubmit="handleUserSubmit(event)">
+                    <h2 class="text-base font-black text-slate-900 tracking-tight uppercase mb-4">Usuarios del Sistema</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="new-user-name" placeholder="NOMBRE COMPLETO" class="w-full px-3 py-2 border rounded-lg text-xs font-bold uppercase bg-slate-50 outline-none">
+                        <input type="email" id="new-user-email" placeholder="CORREO" required class="w-full px-3 py-2 border rounded-lg text-xs lowercase bg-slate-50 outline-none">
+                        <input type="password" id="new-user-pass" placeholder="CONTRASEÑA" required class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 outline-none">
+                        <select id="new-user-rol" class="w-full px-3 py-2 border rounded-lg text-xs font-bold uppercase bg-slate-50 outline-none">
+                            <option value="usuario">Usuario</option><option value="supervisor">Supervisor</option><option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="btn-create-user" class="w-full bg-[#0f172a] text-white py-2 rounded-lg font-black uppercase text-xs shadow-md">REGISTRAR / ACTUALIZAR</button>
+                </form>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto"><table class="w-full text-left border-collapse"><tbody id="users-list-container" class="divide-y divide-slate-100 text-xs font-bold text-slate-800"></tbody></table></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODALES COMPLETOS Y ÚNICOS                     -->
+    <!-- ============================================== -->
+
+    <!-- Modal: Agregar/Editar Herramienta -->
+    <div id="modal-tool" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
+        <div class="bg-white w-full h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
+            <div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100">
+                <h3 id="modal-tool-title" class="text-base font-black text-slate-800 uppercase">AGREGAR HERRAMIENTA</h3>
+                <button onclick="closeModal('modal-tool')" class="text-slate-400 hover:text-slate-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-tool" class="p-3 sm:p-4 overflow-y-auto" onsubmit="handleToolSubmit(event)">
+                <div class="space-y-3">
+                    <input type="hidden" id="tool-id">
+                    <div>
+                        <label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Nombre *</label>
+                        <input type="text" id="tool-name" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="EJ: TALADRO BOSCH">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Cantidad *</label>
+                        <input type="number" id="tool-qty" min="1" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 text-xs" value="1">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Imagen de la Herramienta</label>
+                        <div class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-slate-50 flex items-center text-xs text-slate-500 overflow-hidden">
+                            <input type="file" id="tool-image" accept="image/*" class="block w-full text-[10px] text-slate-500 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer uppercase">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Estante *</label>
+                            <input type="text" id="tool-shelf" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="A1">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Fila *</label>
+                            <input type="text" id="tool-row" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="2">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 pt-3 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('modal-tool')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition font-bold uppercase">CANCELAR</button>
+                    <button type="submit" id="modal-tool-submit" class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-black shadow-sm uppercase tracking-wider">GUARDAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Detalles e Historial de Herramienta -->
+    <div id="modal-history" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
+        <div class="bg-white w-full h-full sm:h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-2xl modal-enter flex flex-col">
+            <div class="flex justify-between items-start p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+                <div class="flex gap-3 items-start min-w-0">
+                    <div id="history-tool-image-container" class="w-12 h-12 shrink-0 bg-white border border-slate-200 rounded-lg overflow-hidden flex items-center justify-center cursor-pointer shadow-sm"></div>
+                    <div class="min-w-0">
+                        <h3 id="history-tool-name" class="text-base font-black text-slate-800 uppercase leading-none mb-1 truncate">DETALLES</h3>
+                        <p id="history-tool-id" class="text-[9px] text-blue-600 font-bold tracking-widest uppercase mb-1"></p>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-history')" class="text-slate-400 hover:text-slate-600 transition shrink-0 ml-2"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div id="history-tool-details" class="p-3 bg-blue-50/50 border-b border-blue-100 flex gap-3 text-center">
+                <div class="flex-1"><span class="text-[9px] text-slate-400 font-black uppercase tracking-tighter block mb-0.5">UBICACIÓN</span><p id="history-tool-location" class="text-xs text-slate-700 font-bold uppercase"></p></div>
+                <div class="flex-1 border-l border-blue-100"><span class="text-[9px] text-slate-400 font-black uppercase tracking-tighter block mb-0.5">DISPONIBILIDAD</span><p id="history-tool-qty" class="text-xs text-slate-700 font-bold uppercase"></p></div>
+            </div>
+            <div class="px-4 pt-3"><h4 class="text-[9px] text-slate-400 font-black uppercase tracking-widest border-b border-slate-100 pb-1">HISTORIAL DE ENTREGAS</h4></div>
+            <div id="history-content" class="p-3 overflow-y-auto space-y-2.5 flex-1"></div>
+            <div class="p-3 border-t border-slate-100 text-center bg-slate-50 rounded-b-xl">
+                <button onclick="closeModal('modal-history')" class="px-5 py-1.5 bg-slate-800 text-white text-xs font-black rounded-lg uppercase tracking-widest shadow-sm">CERRAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Registrar Préstamo -->
+    <div id="modal-loan" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
+        <div class="bg-white w-full h-full sm:h-[85vh] sm:max-h-[95vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
+            <div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+                <h3 id="modal-loan-title" class="text-base font-black text-slate-800 uppercase">REGISTRAR PRÉSTAMO</h3>
+                <button onclick="closeModal('modal-loan')" class="text-slate-400 hover:text-slate-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-loan" class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col" onsubmit="handleLoanSubmit(event)">
+                <div class="space-y-3 pb-20">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">NOMBRE SOLICITANTE *</label>
+                        <input type="text" list="solicitantes" id="loan-applicant" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 font-bold uppercase text-xs" placeholder="ESCRIBIR...">
+                        <datalist id="solicitantes"></datalist>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">QUIÉN ENTREGA *</label>
+                        <input type="text" list="entregadores" id="loan-deliverer" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 font-bold uppercase text-xs" placeholder="TU NOMBRE...">
+                        <datalist id="entregadores"></datalist>
+                    </div>
+                    
+                    <div class="pt-2 border-t border-slate-100">
+                        <label class="block font-bold text-slate-700 mb-1.5 uppercase text-[10px]">HERRAMIENTAS</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
+                            </div>
+                            <input type="text" id="tool-search" class="w-full pl-7 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="BUSCAR PARA AGREGAR...">
+                            <div id="search-results" class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs"></div>
+                        </div>
+
+                        <div class="mt-3">
+                            <h4 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">LISTA SELECCIONADA</h4>
+                            <div id="selected-tools-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                                <p class="text-[10px] text-slate-400 italic text-center py-1.5 bg-slate-50 rounded border border-dashed border-slate-200 uppercase font-bold">VACÍO</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2 shrink-0">
+                    <button type="button" onclick="closeModal('modal-loan')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition font-bold uppercase">CANCELAR</button>
+                    <button type="submit" id="modal-loan-submit" class="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-black shadow-sm uppercase tracking-wider">REGISTRAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Nuevo Artículo Consumible -->
+    <div id="modal-sales-item" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
+        <div class="bg-white w-full h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
+            <div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100">
+                <h3 id="modal-sales-item-title" class="text-base font-black text-slate-800 uppercase">NUEVO ARTÍCULO BASE</h3>
+                <button onclick="closeModal('modal-sales-item')" class="text-slate-400 hover:text-slate-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-sales-item" class="p-3 sm:p-4 overflow-y-auto" onsubmit="handleSalesItemSubmit(event)">
+                <div class="space-y-3">
+                    <input type="hidden" id="sales-item-id">
+                    <input type="hidden" id="sales-item-code">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Nombre del Artículo *</label>
+                        <input type="text" id="sales-item-name" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="EJ: ACEITE FUERA DE BORDA...">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Cantidad Inicial</label>
+                        <input type="number" id="sales-item-qty" min="0" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 text-xs" value="0">
+                        <p class="text-[8px] font-bold text-slate-400 mt-1 uppercase leading-tight">Normalmente se llena con el registro de entradas, dejar en 0 si no hay stock.</p>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Imagen</label>
+                        <div class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-slate-50 flex items-center text-xs text-slate-500 overflow-hidden">
+                            <input type="file" id="sales-item-image" accept="image/*" class="block w-full text-[10px] font-bold text-slate-500 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer uppercase">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 pt-3 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('modal-sales-item')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition font-bold uppercase">CANCELAR</button>
+                    <button type="submit" class="px-3 py-1.5 text-xs bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition font-black shadow-sm uppercase tracking-wider">GUARDAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Registrar Entrada (Ingresos) -->
+    <div id="modal-sales-input" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
+        <div class="bg-white w-full h-full sm:h-[80vh] sm:max-h-[95vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
+            <div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+                <h3 class="text-base font-black text-slate-800 uppercase">ENTRADAS FORM</h3>
+                <button onclick="closeModal('modal-sales-input')" class="text-slate-400 hover:text-slate-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-sales-input" class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col" onsubmit="handleSalesInputSubmit(event)">
+                <div class="space-y-3 pb-20">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">ARTÍCULO *</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none"><i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i></div>
+                            <input type="text" id="sales-in-search" oninput="searchSalesArticles('in')" class="w-full pl-7 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" placeholder="BUSCAR...">
+                            <div id="sales-in-results" class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs"></div>
+                        </div>
+                        <div id="sales-in-selected" class="hidden mt-1.5 p-2 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-between">
+                            <span id="sales-in-selected-name" class="text-[10px] font-black uppercase truncate text-indigo-900 pr-2"></span>
+                            <button type="button" onclick="clearSalesSelection('in')" class="text-indigo-500 hover:text-indigo-700"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
+                        </div>
+                        <input type="hidden" id="sales-in-article-id" required>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">CANTIDAD DE ENTRADA *</label>
+                        <div class="flex items-center h-8">
+                            <button type="button" class="w-8 h-full border border-slate-300 rounded-l-lg bg-slate-50 flex items-center justify-center font-bold text-base hover:bg-slate-100" onclick="adjustInputQty('sales-in-qty', -1)">-</button>
+                            <input type="number" id="sales-in-qty" min="1" required class="w-full h-full px-2 border-y border-slate-300 focus:ring-0 outline-none text-center font-bold text-sm" value="1">
+                            <button type="button" class="w-8 h-full border border-slate-300 rounded-r-lg bg-slate-50 flex items-center justify-center font-bold text-base hover:bg-slate-100" onclick="adjustInputQty('sales-in-qty', 1)">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">FECHA DE ENTRADA</label>
+                        <input type="date" id="sales-in-date" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase font-bold text-xs">
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2 shrink-0">
+                    <button type="button" onclick="closeModal('modal-sales-input')" class="px-3 py-1.5 text-xs text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-lg transition font-bold uppercase">CANCELAR</button>
+                    <button type="submit" class="px-3 py-1.5 text-xs bg-indigo-900 text-white rounded-lg hover:bg-indigo-800 transition font-black shadow-sm uppercase tracking-wider">GUARDAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Registrar Salida (Consumo/Venta) -->
+    <div id="modal-sales-output" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
+        <div class="bg-white w-full h-full sm:h-[85vh] sm:max-h-[95vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
+            <div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+                <h3 class="text-base font-black text-slate-800 uppercase">SALIDAS FORM</h3>
+                <button onclick="closeModal('modal-sales-output')" class="text-slate-400 hover:text-slate-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="form-sales-output" class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col" onsubmit="handleSalesOutputSubmit(event)">
+                <div class="space-y-3 pb-20">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">SUPERVISOR A CARGO</label>
+                        <div class="px-2.5 py-1.5 bg-slate-100 border border-slate-200 rounded-lg font-black text-slate-700 text-xs uppercase flex items-center gap-1.5 shadow-inner">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i><span id="sales-out-supervisor-display">CARGANDO...</span>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-100">
+                        <label class="block font-bold text-slate-700 mb-1.5 uppercase text-[10px]">ARTÍCULOS A RETIRAR *</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none"><i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i></div>
+                            <input type="text" id="sales-out-search" oninput="searchSalesArticles('out')" class="w-full pl-7 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" placeholder="BUSCAR ARTÍCULO...">
+                            <div id="sales-out-results" class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs"></div>
+                        </div>
+                        <div class="mt-3">
+                            <h4 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">LISTA DE SALIDA</h4>
+                            <div id="selected-sales-out-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                                <p class="text-[10px] text-slate-400 italic text-center py-1.5 bg-slate-50 rounded border border-dashed border-slate-200 uppercase font-bold">VACÍO</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-100">
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">PARA USO EN *</label>
+                        <textarea id="sales-out-uso" required rows="2" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 uppercase text-xs resize-none" placeholder="DESCRIPCIÓN DEL USO..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">NOMBRE DEL QUE RECIBE *</label>
+                        <input type="text" list="receptores-consumibles" id="sales-out-recibe" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 font-bold uppercase text-xs" placeholder="ESCRIBIR...">
+                        <datalist id="receptores-consumibles"></datalist>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2 shrink-0">
+                    <button type="button" onclick="closeModal('modal-sales-output')" class="px-3 py-1.5 text-xs text-orange-600 border border-orange-200 hover:bg-orange-50 rounded-lg transition font-bold uppercase">CANCELAR</button>
+                    <button type="submit" class="px-3 py-1.5 text-xs bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-black shadow-lg uppercase tracking-wider">REGISTRAR SALIDA</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detalles Consumibles (Historial) -->
+    <div id="modal-sales-history" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
+        <div class="bg-white w-full h-full sm:h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-2xl modal-enter flex flex-col">
+            <div class="flex justify-between items-start p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+                <div class="flex gap-3 items-start min-w-0">
+                    <div id="sales-history-image-container" class="w-12 h-12 shrink-0 bg-white border border-slate-200 rounded-lg overflow-hidden flex items-center justify-center cursor-pointer shadow-sm"></div>
+                    <div class="min-w-0">
+                        <h3 id="sales-history-name" class="text-base font-black text-slate-800 uppercase leading-none mb-1 truncate">DETALLES</h3>
+                        <p id="sales-history-code" class="text-[9px] text-indigo-600 font-bold tracking-widest uppercase mb-2"></p>
+                        <div class="flex gap-1.5">
+                            <button onclick="document.getElementById('btn-quick-in-hidden').click()" class="admin-only bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider transition flex items-center gap-1 shadow-sm"><i data-lucide="package-plus" class="w-3 h-3"></i> ENTRADA</button>
+                            <button onclick="document.getElementById('btn-quick-out-hidden').click()" class="bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider transition flex items-center gap-1 shadow-sm"><i data-lucide="package-minus" class="w-3 h-3"></i> SALIDA</button>
+                        </div>
+                        <button id="btn-quick-in-hidden" class="hidden"></button><button id="btn-quick-out-hidden" class="hidden"></button>
+                    </div>
+                </div>
+                <button onclick="closeModal('modal-sales-history')" class="text-slate-400 hover:text-slate-600 transition shrink-0 ml-2"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div id="sales-history-qty-container" class="p-3 border-b text-center transition-colors duration-300">
+                <span id="sales-history-qty-label" class="text-[9px] font-black uppercase tracking-tighter block mb-0.5 transition-colors duration-300">STOCK DISPONIBLE</span>
+                <p id="sales-history-qty" class="text-2xl font-black uppercase transition-colors duration-300"></p>
+                <p id="sales-history-warning" class="hidden text-[9px] font-black uppercase tracking-widest mt-1 animate-pulse"></p>
+            </div>
+            <div class="flex border-b border-slate-100 bg-white shrink-0">
+                <button id="tab-history-in" onclick="switchHistoryTab('in')" class="admin-only flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/30 transition">ENTRADAS</button>
+                <button id="tab-history-out" onclick="switchHistoryTab('out')" class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-orange-600 border-b-2 border-transparent transition">SALIDAS</button>
+            </div>
+            <div class="p-3 overflow-y-auto flex-1 flex flex-col">
+                <div id="view-history-in" class="block admin-only">
+                    <div class="flex justify-between items-center mb-2 border-b border-indigo-100 pb-1.5"><h4 class="text-[9px] text-indigo-500 font-black uppercase tracking-widest flex items-center gap-1"><i data-lucide="arrow-down-left" class="w-3 h-3"></i> ENTRADAS</h4><button onclick="exportItemHistory('in')" class="text-[8px] bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 px-1.5 py-1 rounded font-bold uppercase flex items-center gap-1 transition shadow-sm"><i data-lucide="download" class="w-2.5 h-2.5"></i> XLSX</button></div>
+                    <div id="sales-history-in-content" class="space-y-2"></div>
+                </div>
+                <div id="view-history-out" class="hidden">
+                    <div class="flex justify-between items-center mb-2 border-b border-orange-100 pb-1.5"><h4 class="text-[9px] text-orange-500 font-black uppercase tracking-widest flex items-center gap-1"><i data-lucide="arrow-up-right" class="w-3 h-3"></i> SALIDAS</h4><button onclick="exportItemHistory('out')" class="text-[8px] bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200 px-1.5 py-1 rounded font-bold uppercase flex items-center gap-1 transition shadow-sm"><i data-lucide="download" class="w-2.5 h-2.5"></i> XLSX</button></div>
+                    <div id="sales-history-out-content" class="space-y-2"></div>
+                </div>
+            </div>
+            <div class="p-3 border-t border-slate-100 text-center bg-slate-50 rounded-b-xl">
+                <button onclick="closeModal('modal-sales-history')" class="px-5 py-1.5 bg-slate-800 text-white text-xs font-black rounded-lg uppercase tracking-widest shadow-sm">CERRAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmar Acción -->
+    <div id="modal-confirm" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-4 text-xs">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-xs modal-enter flex flex-col border border-slate-200">
+            <div class="p-5 text-center">
+                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3"><i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i></div>
+                <h3 id="confirm-title" class="text-base font-black text-slate-800 mb-1.5 uppercase">¿Eliminar?</h3>
+                <p id="confirm-desc" class="text-[9px] text-slate-500 mb-5 uppercase font-bold leading-tight">Esta acción no se puede deshacer.</p>
+                <div class="flex gap-2 justify-center">
+                    <button onclick="closeModal('modal-confirm')" class="px-3 py-1.5 text-xs text-slate-600 bg-slate-100 rounded-lg transition font-bold w-full uppercase">NO</button>
+                    <button id="confirm-action-btn" class="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-black shadow-sm w-full uppercase">SÍ, BORRAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visor de Imagen -->
+    <div id="modal-image-viewer" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[70] backdrop-blur-md p-4" onclick="closeImageViewer()">
+        <button class="absolute top-4 right-4 text-white/60 hover:text-white p-2" onclick="closeImageViewer()"><i data-lucide="x" class="w-8 h-8"></i></button>
+        <img id="full-screen-image" src="" alt="Vista" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" onclick="event.stopPropagation()">
+    </div>
+
+    <div id="toast-container" class="fixed bottom-4 right-4 flex flex-col gap-2 z-[60] items-end pointer-events-none"></div>
+
+    <script>
+        const supabaseUrl = 'https://vultocxxccxzyinechkc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bHRvY3h4Y2N4enlpbmVjaGtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTUxNTQsImV4cCI6MjA5MjM3MTE1NH0.XybbNTEAvXmc-3GRqRJ1NcRpxK42CP7FbCsn5o-hUdg';
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentUserRole = 'usuario'; let currentUserName = ''; let systemUsers = []; let inventory = []; let loans = []; let articulosVenta = []; let salidasVenta = []; let entradasVenta = []; let selectedToolsForLoan = []; let selectedSalesOutArticles = []; 
+        let currentHistoryItemId = null; let currentEditingToolId = null; let currentEditingLoanId = null; let currentEditingSalesItemId = null; let currentEditingSalesInputId = null; let currentEditingSalesOutputId = null; 
+        let currentEditingUserId = null; let itemToDelete = null; let deleteType = null; let pollingInterval = null; let useLocalFallback = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            setupYearFilter();
+            setupDayFilter();
+            setCurrentDateInputs();
+            setupSearchListeners();
+            checkAuth();
+        });
+
+        function generateID(prefix = 'ID') {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = prefix + '-';
+            for (let i = 0; i < 6; i++) { result += chars.charAt(Math.floor(Math.random() * chars.length)); }
+            return result;
+        }
+
+        async function checkAuth() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) showAppContent();
+            else document.getElementById('login-container').classList.remove('hidden');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            const btn = document.getElementById('login-btn');
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> VERIFICANDO...'; 
+            btn.disabled = true; lucide.createIcons();
+            
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+            if (error) { 
+                document.getElementById('login-error').innerText = 'ERROR EN ACCESO'; 
+                document.getElementById('login-error').classList.remove('hidden'); 
+                btn.innerHTML = 'INICIAR SESIÓN'; btn.disabled = false; 
+            } else { 
+                try { if (!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e => console.log("FS", e)); } catch(err) {}
+                showAppContent(); 
+            }
+        }
+
+        async function handleLogout() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            await supabaseClient.auth.signOut();
+            location.reload();
+        }
+
+        async function showAppContent() {
+            const btn = document.getElementById('login-btn');
+            if (btn) { btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline-block"></i> CARGANDO SISTEMA...'; btn.disabled = true; lucide.createIcons(); }
+            await fetchInitialData();
+            document.getElementById('login-container').classList.add('hidden');
+            const app = document.getElementById('app-container');
+            app.classList.remove('hidden');
+            setTimeout(() => app.classList.remove('opacity-0'), 50);
+            
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(fetchInitialData, 30000); 
+            switchView('home');
+        }
+
+        function showLoginScreen() {
+            const app = document.getElementById('app-container');
+            app.classList.add('opacity-0');
+            setTimeout(() => {
+                app.classList.add('hidden');
+                document.getElementById('form-login').reset();
+                const btn = document.getElementById('login-btn');
+                if (btn) { btn.innerHTML = 'INICIAR SESIÓN'; btn.disabled = false; }
+                const login = document.getElementById('login-container');
+                login.classList.remove('hidden');
+                login.classList.remove('opacity-0');
+            }, 150);
+            if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+            inventory = []; loans = []; articulosVenta = []; entradasVenta = []; salidasVenta = []; systemUsers = []; selectedSalesOutArticles = []; selectedToolsForLoan = [];
+        }
+
+        async function fetchInitialData() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                const userEmail = user.email.toLowerCase().trim();
+                if (userEmail === 'tes@gmail.com') { currentUserRole = 'admin'; currentUserName = 'ADMIN'; }
+                else {
+                    const { data: ud } = await supabaseClient.from('usuarios').select('rol, nombre_completo').eq('id', user.id).single();
+                    if (ud) { currentUserRole = ud.rol; currentUserName = ud.nombre_completo || userEmail; }
+                }
+            }
+            const statusEl = document.getElementById('status-user-name');
+            if(statusEl) statusEl.innerText = `${currentUserName.toUpperCase()} (${currentUserRole.toUpperCase()})`;
+            document.getElementById('cloud-status').classList.remove('hidden');
+            
+            const [inv, ln, art, ent, sal] = await Promise.all([
+                supabaseClient.from('inventory').select('*').order('nombre'),
+                supabaseClient.from('registro_prestamos').select('*').order('created_at', { ascending: false }),
+                supabaseClient.from('articulos_venta').select('*').order('nombre'),
+                supabaseClient.from('entradas_articulos').select('*').order('created_at', { ascending: false }),
+                supabaseClient.from('salidas_articulos').select('*').order('created_at', { ascending: false })
+            ]);
+            inventory = inv.data || [];
+            loans = (ln.data || []).map(r => ({ id: r.id, applicant: r.solicitante, deliverer: r.entregado_por, date: r.fecha, status: r.estado, tools: r.herramientas, timestamp: r.created_at }));
+            articulosVenta = art.data || [];
+            entradasVenta = ent.data || [];
+            salidasVenta = sal.data || [];
+            
+            const supDisplay = document.getElementById('sales-out-supervisor-display');
+            if(supDisplay) supDisplay.innerText = `RESPONSABLE: ${currentUserName.toUpperCase()}`;
+
+            const { data: ur } = await supabaseClient.from('usuarios').select('*').order('nombre_completo'); 
+            systemUsers = ur || []; 
+            
+            const filterUserEl = document.getElementById('filter-user');
+            if(filterUserEl) {
+                const currentVal = filterUserEl.value;
+                filterUserEl.innerHTML = '<option value="">TODOS LOS USUARIOS</option>' + systemUsers.map(u => `<option value="${(u.nombre_completo || u.email).toUpperCase()}">${(u.nombre_completo || u.email).toUpperCase()}</option>`).join('');
+                if(currentVal) filterUserEl.value = currentVal;
+            }
+            
+            updateStats(); updateApplicantDatalists(); renderInventory(); renderLoans(); renderSalesCatalog(); renderUsers(); renderReports();
+        }
+
+        function updateStats() {
+            const upd = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+            upd('stat-total-tools', inventory.length);
+            upd('stat-pending-loans', loans.filter(l => l.status==='activo').length);
+            upd('stat-total-sales', articulosVenta.length);
+            upd('stat-total-users', systemUsers.length);
+        }
+        
+        function updateApplicantDatalists() {
+            const setList = (id, field) => {
+                const datalist = document.getElementById(id);
+                if (datalist) {
+                    const vals = [...new Set(loans.map(l => (l[field]||'').toUpperCase().trim()))].sort();
+                    datalist.innerHTML = vals.filter(v => v).map(v => `<option value="${v}">`).join('');
+                }
+            };
+            setList('solicitantes', 'applicant');
+            setList('entregadores', 'deliverer');
+            
+            const datalistSales = document.getElementById('receptores-consumibles');
+            if (datalistSales) {
+                const uniqueRec = [...new Set(salidasVenta.map(s => (s.recibe||'').toUpperCase().trim()))].sort();
+                datalistSales.innerHTML = uniqueRec.filter(name => name).map(name => `<option value="${name}">`).join('');
+            }
+        }
+
+        function saveLocalData() {}
+
+        function setupYearFilter() {
+            const s = document.getElementById('filter-year'); if(!s) return;
+            const c = new Date().getFullYear(); s.innerHTML = '';
+            for(let i = c; i >= 2024; i--) { const o = document.createElement('option'); o.value = String(i); o.innerText = String(i); s.appendChild(o); }
+        }
+
+        function setupDayFilter() {
+            const s = document.getElementById('filter-day'); if(!s) return;
+            s.innerHTML = '<option value="all">TODOS</option>';
+            for(let i = 1; i <= 31; i++) {
+                const o = document.createElement('option');
+                const val = String(i).padStart(2, '0');
+                o.value = val; o.innerText = val;
+                s.appendChild(o);
+            }
+        }
+
+        function setCurrentDateInputs() {
+            const now = new Date();
+            const d = String(now.getDate()).padStart(2, '0');
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const y = String(now.getFullYear());
+            if(document.getElementById('filter-day')) document.getElementById('filter-day').value = d;
+            if(document.getElementById('filter-month')) document.getElementById('filter-month').value = m;
+            if(document.getElementById('filter-year')) document.getElementById('filter-year').value = y;
+            if(document.getElementById('sales-in-date')) document.getElementById('sales-in-date').value = now.toISOString().split('T')[0];
+        }
+
+        function switchView(view) {
+            ['home', 'inventory', 'loans', 'sales', 'reports', 'users'].forEach(v => {
+                const el = document.getElementById(`view-${v}`); if(el) el.classList.toggle('hidden', v !== view);
+                const tab = document.getElementById(`tab-${v}`); if(tab) tab.classList.toggle('bg-slate-700', v === view);
+            });
+            if(view === 'reports') renderReports();
+            applyRoleRestrictions();
+        }
+
+        function applyRoleRestrictions() {
+            const isAdmin = currentUserRole === 'admin';
+            const isSupervisor = currentUserRole === 'supervisor';
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? '' : 'none');
+            document.querySelectorAll('.admin-supervisor').forEach(el => el.style.display = (isAdmin || isSupervisor) ? '' : 'none');
+            document.querySelectorAll('.hide-from-supervisor').forEach(el => el.style.display = isSupervisor ? 'none' : '');
+        }
+
+        function renderReports() {
+            const d = document.getElementById('filter-day') ? document.getElementById('filter-day').value : 'all';
+            const m = document.getElementById('filter-month').value;
+            const y = document.getElementById('filter-year').value;
+            const userF = document.getElementById('filter-user') ? document.getElementById('filter-user').value.toUpperCase().trim() : '';
+            const tbody = document.getElementById('reports-table-body');
+            if(!tbody || !salidasVenta) return;
+
+            const filtered = salidasVenta.filter(s => {
+                if (!s.fecha) return false;
+                
+                // Filtro de seguridad: El supervisor solo puede ver sus propios registros
+                if (currentUserRole === 'supervisor' && s.supervisor !== currentUserName.toUpperCase()) {
+                    return false;
+                }
+
+                const p = s.fecha.split('/');
+                if (p.length !== 3) return false;
+                const itemDay = p[0].padStart(2, '0');
+                const itemMonth = p[1].padStart(2, '0');
+                const itemYear = p[2];
+                const dayMatch = (d === 'all' || itemDay === d);
+                const dateMatch = dayMatch && itemMonth === m && itemYear === y;
+                const userMatch = !userF || (s.recibe && s.recibe.toUpperCase().includes(userF)) || (s.supervisor && s.supervisor.toUpperCase().includes(userF));
+                return dateMatch && userMatch;
+            });
+
+            document.getElementById('rep-stat-total').innerText = filtered.length;
+            document.getElementById('rep-stat-units').innerText = filtered.reduce((a, c) => a + c.cantidad, 0);
+
+            const rank = {};
+            filtered.forEach(s => { const k = s.nombre_articulo.toUpperCase(); rank[k] = (rank[k]||0) + s.cantidad; });
+            const sorted = Object.entries(rank).sort((a,b) => b[1] - a[1]);
+            document.getElementById('rep-stat-top').innerText = sorted.length > 0 ? sorted[0][0] : 'SIN DATOS';
+
+            const isAdmin = currentUserRole === 'admin';
+
+            tbody.innerHTML = filtered.map(s => {
+                const actionTd = isAdmin ? `<td class="p-2.5 text-right w-16"><div class="flex justify-end gap-1"><button onclick="editSalesOutput('${s.id}')" class="p-1 text-slate-300 hover:text-indigo-600 transition" title="Editar"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${s.id}', 'salesOutput')" class="p-1 text-slate-300 hover:text-red-500 transition" title="Eliminar"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></td>` : '';
+                return `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-2.5">${s.fecha}</td>
+                    <td class="p-2.5 truncate max-w-[120px]">${s.nombre_articulo}</td>
+                    <td class="p-2.5 text-center"><span class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-black">${s.cantidad}</span></td>
+                    <td class="p-2.5 truncate max-w-[100px]">${s.recibe}</td>
+                    <td class="p-2.5 text-[9px] text-slate-400 font-bold">${s.supervisor}</td>
+                    ${actionTd}
+                </tr>
+            `}).join('');
+
+            if(filtered.length === 0) tbody.innerHTML = `<tr><td colspan="${isAdmin ? 6 : 5}" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">SIN REGISTROS PARA ESTA BÚSQUEDA.</td></tr>`;
+            lucide.createIcons();
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
+            const search = document.getElementById('inventory-search').value.toLowerCase();
+            if(!grid) return; grid.innerHTML = '';
+            const filtered = inventory.filter(t => (t.nombre||'').toLowerCase().includes(search) || (t.id_articulo||'').toLowerCase().includes(search));
+            if(filtered.length === 0) { document.getElementById('empty-inventory').classList.remove('hidden'); return; }
+            document.getElementById('empty-inventory').classList.add('hidden');
+            
+            filtered.forEach(tool => {
+                const avail = tool.cantidad > 0;
+                const adminActions = currentUserRole !== 'supervisor' ? `<div class="flex gap-1 shrink-0 ml-1"><button onclick="editTool('${tool.id_articulo}')" class="p-1 text-slate-300 hover:text-blue-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${tool.id_articulo}', 'tool')" class="p-1 text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>` : '';
+                const card = document.createElement('div');
+                card.className = "tool-card bg-white rounded-xl border border-slate-200 overflow-hidden flex items-center pr-2 shadow-sm transition cursor-pointer p-1.5";
+                card.onclick = () => openToolHistoryModal(tool.id_articulo);
+                card.innerHTML = `<div class="w-10 h-10 shrink-0 bg-slate-100 flex items-center justify-center rounded overflow-hidden mr-2">${tool.imagen_url ? `<img src="${tool.imagen_url}" class="w-full h-full object-cover">` : '<i data-lucide="image" class="text-slate-300 w-4 h-4"></i>'}</div><div class="flex-1 min-w-0"><h3 class="text-[11px] font-bold truncate uppercase leading-tight mb-0.5">${tool.nombre}</h3><div class="flex gap-1.5 items-center"><span class="text-[8px] bg-slate-100 text-slate-500 px-1 rounded">EST: ${tool.estante || 'N/A'}</span><span class="text-[8px] font-black ${avail?'text-emerald-600':'text-red-600'} uppercase">DISP: ${tool.cantidad}</span></div></div>${adminActions}`;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function renderLoans() {
+            const container = document.getElementById('loans-list-container');
+            const emptyState = document.getElementById('empty-loans');
+            const searchInput = document.getElementById('loans-search');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            if(!container) return; container.innerHTML = '';
+            const active = loans.filter(l => l.status === 'activo' && (!search || l.applicant.toLowerCase().includes(search) || l.deliverer.toLowerCase().includes(search)));
+            if(active.length === 0) { emptyState.classList.remove('hidden'); return; }
+            emptyState.classList.add('hidden');
+
+            const groups = {};
+            active.forEach(l => { groups[l.applicant] = groups[l.applicant] || []; groups[l.applicant].push(l); });
+            for(const [name, items] of Object.entries(groups)) {
+                const hasOverdue = items.some(l => getElapsedDays(l.timestamp) >= 4);
+                const div = document.createElement('div');
+                div.className = "bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full";
+                div.innerHTML = `<div class="px-4 py-3 bg-[#0f172a] text-white flex justify-between items-center relative overflow-hidden">${hasOverdue ? `<div class="absolute inset-0 bg-red-600 animate-alert flex items-center justify-center pointer-events-none opacity-20"></div>` : ''}<div class="min-w-0 flex-1 pr-2 z-10"><h3 class="text-sm font-black uppercase tracking-wider truncate">${name}</h3><div class="flex items-center gap-2"><p class="text-xs text-slate-400 font-bold uppercase text-[9px]">${items.length} PENDIENTE(S)</p></div></div><div class="bg-blue-600/20 text-blue-400 p-1.5 rounded-lg shrink-0 z-10"><i data-lucide="user" class="w-5 h-5"></i></div></div><div class="divide-y divide-slate-100">${items.map(l => {
+                    const days = getElapsedDays(l.timestamp);
+                    const adminActions = currentUserRole !== 'supervisor' ? `<button onclick="editLoan('${l.id}')" class="p-2 text-slate-400 hover:text-blue-600 transition bg-slate-50 rounded-lg"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${l.id}', 'loan')" class="p-2 text-slate-300 hover:text-red-500 transition bg-slate-50 rounded-lg"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : '';
+                    return `<div class="p-3 bg-white relative"><div class="flex justify-between items-center mb-3"><div class="flex flex-col"><span class="text-[9px] text-slate-400 font-black uppercase mb-0.5 tracking-widest">FECHA Y HORA</span><span class="text-xs text-slate-800 font-extrabold uppercase">${l.date}</span><span class="text-[9px] ${days >= 4 ? 'text-red-600 font-black' : 'text-emerald-600'} mt-1 uppercase">${days} DÍAS</span></div><span class="bg-red-500 text-white px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider shadow-sm">PENDIENTE</span></div><div class="text-[10px] text-slate-600 mb-3 flex items-center gap-1.5 font-bold uppercase">ENTREGÓ: <span class="text-slate-900">${l.deliverer}</span></div><div class="flex flex-col gap-1.5 mb-3 uppercase">${l.tools.map(t => { const inv = inventory.find(i => i.id_articulo === t.id_articulo); const imgUrl = (inv && inv.imagen_url) ? inv.imagen_url : t.imagen_url; return `<div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200/50"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden flex items-center justify-center shrink-0 cursor-pointer" onclick="${imgUrl ? `openImageViewer('${imgUrl}')` : ''}">${imgUrl ? `<img src="${imgUrl}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="image" class="text-slate-300 w-4 h-4"></i>'}</div><div class="min-w-0 flex-1 uppercase"><p class="text-xs font-black text-slate-800 truncate">${t.nombre}</p><p class="text-[9px] text-slate-500 font-bold uppercase">${t.id_articulo} | CANT: ${t.borrowQty}</p></div><button onclick="returnSingleTool('${l.id}', '${t.id_articulo}')" class="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition shrink-0" title="Recibir artículo individual"><i data-lucide="check-circle" class="w-4 h-4"></i></button></div>`; }).join('')}</div><div class="flex gap-2 mt-3 pt-3 border-t border-slate-100"><button onclick="returnLoan('${l.id}')" class="flex-1 bg-[#0284c7] hover:bg-sky-700 text-white py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition flex items-center justify-center gap-1.5 shadow-md active:scale-95"><i data-lucide="check" class="w-3.5 h-3.5"></i> RECIBIR</button>${adminActions}</div></div>`;
+                }).join('')}</div>`;
+                container.appendChild(div);
+            }
+            lucide.createIcons();
+        }
+
+        function renderSalesCatalog() {
+            const grid = document.getElementById('sales-grid');
+            const search = document.getElementById('sales-search').value.toLowerCase();
+            if(!grid) return; grid.innerHTML = '';
+            const filtered = articulosVenta.filter(t => (t.nombre||'').toLowerCase().includes(search) || (t.id_articulo||'').toLowerCase().includes(search));
+            if(filtered.length === 0) { document.getElementById('empty-sales').classList.remove('hidden'); return; }
+            document.getElementById('empty-sales').classList.add('hidden');
+            
+            filtered.forEach(item => {
+                const adminActions = currentUserRole === 'admin' ? `<div class="flex gap-1 shrink-0 ml-1" onclick="event.stopPropagation()"><button onclick="editSalesItem('${item.id}')" class="p-1 text-slate-300 hover:text-indigo-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${item.id}', 'salesItem')" class="p-1 text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>` : '';
+                const card = document.createElement('div');
+                card.className = "tool-card bg-white rounded-xl border border-slate-200 p-1.5 flex items-center pr-2 shadow-sm cursor-pointer";
+                card.onclick = () => openSalesHistoryModal(item.id);
+                card.innerHTML = `<div class="w-10 h-10 bg-slate-50 flex items-center justify-center rounded overflow-hidden mr-2">${item.imagen_url ? `<img src="${item.imagen_url}" class="w-full h-full object-cover">` : '<i data-lucide="shopping-bag" class="text-slate-300 w-4 h-4"></i>'}</div><div class="flex-1 min-w-0"><h3 class="text-[10px] font-black uppercase truncate">${item.nombre}</h3><p class="text-[9px] font-bold ${item.cantidad>0?'text-emerald-600':'text-red-600'}">STOCK: ${item.cantidad}</p></div>${adminActions}`;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function renderUsers() {
+            const tbody = document.getElementById('users-list-container'); if(!tbody) return;
+            if (systemUsers.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">TABLA VACÍA</td></tr>`; return; }
+            const sortedUsers = [...systemUsers].sort((a, b) => { const ranks = { 'admin': 1, 'supervisor': 2, 'usuario': 3 }; return (ranks[a.rol] || 99) - (ranks[b.rol] || 99); });
+            tbody.innerHTML = sortedUsers.map(u => {
+                let roleBadge = ''; if(u.rol === 'admin') roleBadge = '<span class="text-[8px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-black tracking-widest uppercase">ADMIN</span>'; else if(u.rol === 'supervisor') roleBadge = '<span class="text-[8px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-black tracking-widest uppercase">SUPERVISOR</span>'; else roleBadge = '<span class="text-[8px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-black tracking-widest uppercase">USUARIO</span>';
+                return `<tr class="hover:bg-slate-50 transition cursor-pointer" onclick="editUserForm('${u.id}')"><td class="p-3 sm:px-4 uppercase text-xs">${u.nombre_completo || 'SIN NOMBRE'}</td><td class="p-3 sm:px-4 lowercase text-slate-500 hidden sm:table-cell text-xs">${u.email}</td><td class="p-3 sm:px-4 text-right whitespace-nowrap">${roleBadge}</td></tr>`;
+            }).join(''); lucide.createIcons();
+        }
+
+        // ==========================================
+        //  BUSQUEDA Y MULTISELECCIÓN
+        // ==========================================
+        function setupSearchListeners() {
+            const inpTool = document.getElementById('tool-search');
+            const resTool = document.getElementById('search-results');
+            if(inpTool && resTool) {
+                inpTool.addEventListener('input', () => {
+                    const q = inpTool.value.toLowerCase();
+                    if(!q) { resTool.classList.add('hidden'); return; }
+                    const match = inventory.filter(t => (t.nombre||'').toLowerCase().includes(q) || (t.id_articulo||'').toLowerCase().includes(q));
+                    if(match.length === 0) { resTool.innerHTML = `<div class="p-4 text-center text-slate-400 font-bold uppercase text-[10px]">SIN RESULTADOS</div>`; resTool.classList.remove('hidden'); return; }
+                    resTool.innerHTML = match.map(t => {
+                        const ex = selectedToolsForLoan.find(s => s.id_articulo === t.id_articulo);
+                        return `<div class="p-2 border-b ${t.cantidad > 0 ? (ex ? 'bg-emerald-50 hover:bg-emerald-100' : 'hover:bg-slate-50 cursor-pointer') : 'opacity-50 cursor-not-allowed bg-slate-50'} flex justify-between items-center transition" onclick="${t.cantidad > 0 ? `selectTool('${t.id_articulo}', event)` : `showToast('AGOTADA', 'error'); if(event) event.stopPropagation();`}">
+                            <div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0 flex items-center justify-center shadow-sm" onclick="${t.imagen_url ? `openImageViewer('${t.imagen_url}'); if(event) event.stopPropagation();` : ''}">${t.imagen_url ? `<img src="${t.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="image" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="font-bold text-slate-800 uppercase truncate text-[11px] leading-tight mb-0.5">${t.nombre}</p><p class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">CÓD: ${t.id_articulo || 'S/C'}</p></div></div>
+                            <div class="flex items-center gap-1.5 ml-2">${ex ? `<span class="text-emerald-700 bg-emerald-100 border border-emerald-200 font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm flex items-center gap-1"><i data-lucide="check" class="w-2.5 h-2.5"></i> (${ex.borrowQty})</span>` : ''}<span class="${t.cantidad > 0 ? 'text-emerald-700 bg-emerald-100 border border-emerald-200' : 'text-red-700 bg-red-100 border border-red-200'} font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">DISP: ${t.cantidad}</span></div>
+                        </div>`;
+                    }).join('') + `<div class="sticky bottom-0 w-full p-1.5 bg-slate-50 border-t border-slate-200 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"><button type="button" onclick="closeDropdown('search-results', 'tool-search')" class="w-full bg-[#059669] text-white py-2 rounded-md font-black uppercase tracking-widest text-[10px] hover:bg-emerald-700 transition shadow-sm active:scale-[0.98]">APLICAR SELECCIÓN</button></div>`;
+                    resTool.classList.remove('hidden'); lucide.createIcons();
+                });
+            }
+
+            document.addEventListener('click', (e) => { 
+                const path = e.composedPath();
+                if (inpTool && resTool && !path.includes(inpTool) && !path.includes(resTool)) resTool.classList.add('hidden'); 
+                const inSearch = document.getElementById('sales-in-search'); const inRes = document.getElementById('sales-in-results');
+                if (inSearch && inRes && !path.includes(inSearch) && !path.includes(inRes)) inRes.classList.add('hidden'); 
+                const outSearch = document.getElementById('sales-out-search'); const outRes = document.getElementById('sales-out-results');
+                if (outSearch && outRes && !path.includes(outSearch) && !path.includes(outRes)) outRes.classList.add('hidden'); 
+            });
+        }
+
+        function closeDropdown(r, s) { document.getElementById(r).classList.add('hidden'); document.getElementById(s).value = ''; }
+
+        function selectTool(id, ev) {
+            if(ev) ev.stopPropagation();
+            const t = inventory.find(i => i.id_articulo === id); if(!t || t.cantidad <= 0) return;
+            const ex = selectedToolsForLoan.find(s => s.id_articulo === id);
+            if(ex) { if(ex.borrowQty < t.cantidad) ex.borrowQty++; else showToast('LÍMITE ALCANZADO', 'error'); } 
+            else { selectedToolsForLoan.push({...t, borrowQty: 1}); }
+            renderSelectedTools(); document.getElementById('tool-search').dispatchEvent(new Event('input'));
+        }
+
+        function renderSelectedTools() {
+            const list = document.getElementById('selected-tools-list'); if(!list) return;
+            list.innerHTML = selectedToolsForLoan.map(s => {
+                const disp = s.cantidad - s.borrowQty;
+                return `<div class="flex justify-between items-center bg-white p-1.5 rounded-lg border text-xs shadow-sm mb-1.5"><div class="flex items-center gap-2 flex-1 min-w-0"><div class="w-8 h-8 rounded border bg-slate-50 overflow-hidden shrink-0 flex items-center justify-center cursor-pointer" onclick="${s.imagen_url ? `openImageViewer('${s.imagen_url}')` : ''}">${s.imagen_url ? `<img src="${s.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="image" class="text-slate-300 w-3 h-3"></i>'}</div><div class="min-w-0"><p class="truncate font-bold uppercase text-slate-700 text-[10px] leading-tight">${s.nombre}</p><p class="text-[9px] ${disp === 0 ? 'text-red-500' : 'text-slate-400'} font-bold uppercase transition-colors">DISP: ${disp}</p></div></div><div class="flex items-center gap-2 font-bold"><div class="flex items-center gap-1.5 bg-slate-50 rounded p-0.5 border border-slate-100"><button type="button" class="w-6 h-6 rounded bg-white flex items-center justify-center text-sm border border-slate-200 hover:bg-slate-100 transition" onclick="updSel('${s.id_articulo}',-1)">-</button><span class="min-w-[16px] text-center text-xs">${s.borrowQty}</span><button type="button" class="w-6 h-6 rounded bg-white flex items-center justify-center text-sm border border-slate-200 hover:bg-slate-100 transition" onclick="updSel('${s.id_articulo}',1)">+</button></div><button type="button" class="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded transition" onclick="removeFromSelection('${s.id_articulo}')" title="QUITAR"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></div>`;
+            }).join('');
+            if(selectedToolsForLoan.length === 0) list.innerHTML = '<p class="text-[10px] text-slate-400 italic text-center py-1.5 bg-slate-50 rounded border border-dashed border-slate-200 uppercase font-bold">VACÍO</p>';
+            lucide.createIcons();
+        }
+
+        function removeFromSelection(id) { selectedToolsForLoan = selectedToolsForLoan.filter(x => x.id_articulo !== id); renderSelectedTools(); document.getElementById('tool-search').dispatchEvent(new Event('input')); }
+        function updSel(id, d) { const s = selectedToolsForLoan.find(x => x.id_articulo === id); const inv = inventory.find(i => i.id_articulo === id); if(s && inv) { const n = s.borrowQty + d; if(n > 0 && n <= inv.cantidad) s.borrowQty = n; else if(n > inv.cantidad) showToast('LÍMITE ALCANZADO', 'error'); else if(n === 0) return removeFromSelection(id); renderSelectedTools(); document.getElementById('tool-search').dispatchEvent(new Event('input')); } }
+
+        function searchSalesArticles(type) {
+            const q = document.getElementById(`sales-${type}-search`).value.toLowerCase();
+            const res = document.getElementById(`sales-${type}-results`);
+            if(!q) { res.classList.add('hidden'); return; }
+            const match = articulosVenta.filter(t => (t.nombre||'').toLowerCase().includes(q) || ((t.id_articulo||'').toLowerCase().includes(q)));
+            if(match.length === 0) { res.innerHTML = `<div class="p-4 text-center text-slate-400 font-bold uppercase text-[10px]">SIN RESULTADOS</div>`; res.classList.remove('hidden'); return; }
+
+            if(type === 'out') {
+                res.innerHTML = match.map(t => {
+                    const ex = selectedSalesOutArticles.find(s => s.id === t.id);
+                    return `<div class="p-2 border-b ${t.cantidad > 0 ? (ex ? 'bg-orange-50 hover:bg-orange-100' : 'hover:bg-slate-50 cursor-pointer') : 'opacity-50 cursor-not-allowed bg-slate-50'} flex justify-between items-center transition" onclick="${t.cantidad > 0 ? `selectSalesArticleOut('${t.id}', event)` : `showToast('AGOTADO', 'error'); if(event) event.stopPropagation();`}">
+                        <div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0 flex items-center justify-center shadow-sm" onclick="${t.imagen_url ? `openImageViewer('${t.imagen_url}'); if(event) event.stopPropagation();` : ''}">${t.imagen_url ? `<img src="${t.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="package" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="font-bold text-slate-800 uppercase truncate text-[11px] leading-tight mb-0.5">${t.nombre}</p><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">CÓD: ${t.id_articulo || 'S/C'}</p></div></div>
+                        <div class="flex items-center gap-1.5 ml-2">${ex ? `<span class="text-orange-700 bg-orange-100 border border-orange-200 font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm flex items-center gap-1"><i data-lucide="check" class="w-2.5 h-2.5"></i> (${ex.outQty})</span>` : ''}<span class="${t.cantidad > 0 ? 'text-emerald-700 bg-emerald-100 border border-emerald-200' : 'text-red-700 bg-red-100 border border-red-200'} font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">DISP: ${t.cantidad}</span></div>
+                    </div>`;
+                }).join('') + `<div class="sticky bottom-0 w-full p-1.5 bg-slate-50 border-t border-slate-200 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"><button type="button" onclick="closeDropdown('sales-out-results', 'sales-out-search')" class="w-full bg-[#ea580c] text-white py-2 rounded-md font-black uppercase tracking-widest text-[10px] hover:bg-orange-700 transition shadow-sm active:scale-[0.98]">APLICAR SELECCIÓN</button></div>`;
+            } else {
+                res.innerHTML = match.map(t => `<div class="p-2 border-b hover:bg-indigo-50 cursor-pointer flex justify-between items-center transition" onclick="selectSalesArticle('in', '${t.id}')"><div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0 flex items-center justify-center shadow-sm">${t.imagen_url ? `<img src="${t.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="package" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="font-bold text-slate-800 uppercase truncate text-[11px] leading-tight mb-0.5">${t.nombre}</p><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">CÓD: ${t.id_articulo || 'S/C'}</p></div></div><span class="text-indigo-700 font-black bg-indigo-100 border border-indigo-200 px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">SELECCIONAR</span></div>`).join('');
+            }
+            res.classList.remove('hidden'); lucide.createIcons();
+        }
+
+        function selectSalesArticleOut(id, ev) { if(ev) ev.stopPropagation(); const t = articulosVenta.find(i => i.id === id); if(!t || t.cantidad <= 0) return; const ex = selectedSalesOutArticles.find(s => s.id === id); if(ex) { if(ex.outQty < t.cantidad) ex.outQty++; } else { selectedSalesOutArticles.push({...t, outQty: 1}); } renderSelectedSalesOut(); document.getElementById('sales-out-search').dispatchEvent(new Event('input')); }
+        function selectSalesArticle(type, id) { const t = articulosVenta.find(i => i.id === id); if(!t) return; document.getElementById(`sales-${type}-article-id`).value = t.id; document.getElementById(`sales-${type}-selected-name`).innerText = t.nombre; document.getElementById(`sales-${type}-search`).value = ''; document.getElementById(`sales-${type}-search`).classList.add('hidden'); document.getElementById(`sales-${type}-results`).classList.add('hidden'); document.getElementById(`sales-${type}-selected`).classList.remove('hidden'); document.getElementById(`sales-${type}-selected`).classList.add('flex'); }
+        function clearSalesSelection(type) { document.getElementById(`sales-${type}-article-id`).value = ''; document.getElementById(`sales-${type}-selected`).classList.add('hidden'); document.getElementById(`sales-${type}-selected`).classList.remove('flex'); document.getElementById(`sales-${type}-search`).classList.remove('hidden'); document.getElementById(`sales-${type}-search`).value = ''; }
+
+        function renderSelectedSalesOut() {
+            const list = document.getElementById('selected-sales-out-list'); if(!list) return;
+            list.innerHTML = selectedSalesOutArticles.map(s => `<div class="flex justify-between items-center bg-white p-1.5 rounded-lg border text-[10px] shadow-sm mb-1.5"><div class="flex items-center gap-2 flex-1 min-w-0"><div class="w-8 h-8 rounded border bg-slate-50 overflow-hidden shrink-0 flex items-center justify-center cursor-pointer" onclick="${s.imagen_url ? `openImageViewer('${s.imagen_url}')` : ''}">${s.imagen_url ? `<img src="${s.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="package" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="truncate uppercase font-bold leading-tight text-slate-700">${s.nombre}</p><p class="text-[9px] ${s.cantidad - s.outQty === 0 ? 'text-red-500' : 'text-slate-400'} font-bold uppercase transition-colors">DISP: ${s.cantidad - s.outQty}</p></div></div><div class="flex items-center gap-1.5 ml-2"><button type="button" class="w-6 h-6 bg-white border border-slate-200 hover:bg-slate-100 transition rounded font-bold" onclick="updSalesOutSel('${s.id}',-1)">-</button><span class="font-black w-4 text-center">${s.outQty}</span><button type="button" class="w-6 h-6 bg-white border border-slate-200 hover:bg-slate-100 transition rounded font-bold" onclick="updSalesOutSel('${s.id}',1)">+</button><button type="button" class="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded transition ml-1" onclick="removeFromSalesOutSelection('${s.id}')" title="QUITAR"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></div>`).join('');
+            if(selectedSalesOutArticles.length === 0) list.innerHTML = '<p class="text-[10px] text-slate-400 text-center uppercase font-bold italic py-1.5 border border-dashed border-slate-200 bg-slate-50 rounded">VACÍO</p>';
+            lucide.createIcons();
+        }
+
+        function removeFromSalesOutSelection(id) { selectedSalesOutArticles = selectedSalesOutArticles.filter(x => x.id !== id); renderSelectedSalesOut(); document.getElementById('sales-out-search').dispatchEvent(new Event('input')); }
+        function updSalesOutSel(id, d) { const s = selectedSalesOutArticles.find(x => x.id === id); const inv = articulosVenta.find(i => i.id === id); if(s && inv) { const n = s.outQty + d; if(n > 0 && n <= inv.cantidad) s.outQty = n; else if(n === 0) return removeFromSalesOutSelection(id); renderSelectedSalesOut(); document.getElementById('sales-out-search').dispatchEvent(new Event('input')); } }
+
+        // ==========================================
+        //  ACCIONES CRUD OPTIMIZADAS
+        // ==========================================
+        async function handleLoanSubmit(e) {
+            e.preventDefault(); if(selectedToolsForLoan.length === 0) { showToast('SELECCIONA HERRAMIENTAS', 'error'); return; }
+            const app = document.getElementById('loan-applicant').value.trim().toUpperCase(); const del = document.getElementById('loan-deliverer').value.trim().toUpperCase(); const now = new Date().toLocaleString('es-ES');
+            const btn = document.getElementById('modal-loan-submit'); btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> GUARDANDO...'; btn.disabled = true; lucide.createIcons();
+            try {
+                const id = currentEditingLoanId || 'PR-'+Date.now().toString().slice(-6);
+                const loanData = { id, solicitante: app, entregado_por: del, herramientas: JSON.parse(JSON.stringify(selectedToolsForLoan)), fecha: now, estado: 'activo' };
+                const promises = [supabaseClient.from('registro_prestamos').upsert([loanData])];
+                if (currentEditingLoanId) {
+                    const oldL = loans.find(l => l.id === currentEditingLoanId);
+                    if(oldL && oldL.status === 'activo') {
+                        for(const t of oldL.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if(inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', t.id_articulo)); } }
+                    }
+                } else {
+                    loans.unshift({ id: loanData.id, applicant: loanData.solicitante, deliverer: loanData.entregado_por, date: loanData.fecha, status: loanData.estado, tools: loanData.herramientas, timestamp: new Date().toISOString() });
+                }
+                for(const t of selectedToolsForLoan) { const tool = inventory.find(x => x.id_articulo === t.id_articulo); if(tool) { tool.cantidad -= t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: tool.cantidad }).eq('id_articulo', tool.id_articulo)); } }
+                
+                renderLoans(); renderInventory(); updateStats();
+                showToast('ÉXITO'); closeModal('modal-loan'); switchView('loans');
+                
+                await Promise.all(promises); fetchInitialData();
+            } catch(err) { console.error(err); showToast('ERROR', 'error'); } finally { btn.innerHTML = 'REGISTRAR'; btn.disabled = false; }
+        }
+
+        async function handleSalesOutputSubmit(e) {
+            e.preventDefault(); if(selectedSalesOutArticles.length === 0) { showToast('SELECCIONA ARTÍCULOS', 'error'); return; }
+            const uso = document.getElementById('sales-out-uso').value.trim().toUpperCase(); const recibe = document.getElementById('sales-out-recibe').value.trim().toUpperCase(); const fecha = new Date().toLocaleDateString('es-ES');
+            const btn = document.querySelector('#form-sales-output button[type="submit"]'); btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> GUARDANDO...'; btn.disabled = true; lucide.createIcons();
+            try {
+                if (currentEditingSalesOutputId) {
+                    const s = selectedSalesOutArticles[0]; const oldOut = salidasVenta.find(x => x.id === currentEditingSalesOutputId); const article = articulosVenta.find(a => a.id === s.id); const diff = s.outQty - oldOut.cantidad;
+                    if(oldOut) { oldOut.cantidad = s.outQty; oldOut.para_uso_en = uso; oldOut.recibe = recibe; }
+                    if(article) article.cantidad -= diff;
+                    await Promise.all([ supabaseClient.from('salidas_articulos').update({ cantidad: s.outQty, para_uso_en: uso, recibe: recibe }).eq('id', currentEditingSalesOutputId), supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad - diff }).eq('id', article.id) ]);
+                } else {
+                    const inserts = []; const updates = [];
+                    for(const s of selectedSalesOutArticles) {
+                        const newRecord = { id: generateID('SAL'), articulo_id: s.id, nombre_articulo: s.nombre, cantidad: s.outQty, fecha, supervisor: currentUserName.toUpperCase(), para_uso_en: uso, recibe };
+                        inserts.push(newRecord);
+                        salidasVenta.unshift(newRecord);
+                        const a = articulosVenta.find(x => x.id === s.id); if(a) { updates.push(supabaseClient.from('articulos_venta').update({ cantidad: a.cantidad - s.outQty }).eq('id', s.id)); a.cantidad -= s.outQty; }
+                    }
+                    await Promise.all([ supabaseClient.from('salidas_articulos').insert(inserts), ...updates ]);
+                }
+                renderReports(); renderSalesCatalog();
+                showToast('SALIDA REGISTRADA'); closeModal('modal-sales-output'); fetchInitialData(); if(currentUserRole === 'supervisor') switchView('reports');
+            } catch(err) { console.error(err); showToast('ERROR', 'error'); } finally { btn.innerHTML = 'REGISTRAR SALIDA'; btn.disabled = false; }
+        }
+
+        async function handleSalesInputSubmit(e) {
+            e.preventDefault(); const articleId = document.getElementById('sales-in-article-id').value; const qty = parseInt(document.getElementById('sales-in-qty').value); const dateStr = document.getElementById('sales-in-date').value; if(!articleId || qty <= 0) return;
+            const article = articulosVenta.find(a => a.id === articleId); if(!article) return; const [y, m, d] = dateStr.split('-'); const displayDate = d ? `${d}/${m}/${y}` : new Date().toLocaleDateString('es-ES');
+            const btn = document.querySelector('#form-sales-input button[type="submit"]'); btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> GUARDANDO...'; btn.disabled = true; lucide.createIcons();
+            try {
+                if (currentEditingSalesInputId) {
+                    const oldEntry = entradasVenta.find(e => e.id === currentEditingSalesInputId); const diff = qty - oldEntry.cantidad;
+                    await Promise.all([ supabaseClient.from('entradas_articulos').update({ cantidad: qty, fecha: displayDate }).eq('id', currentEditingSalesInputId), supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad + diff }).eq('id', articleId) ]);
+                } else {
+                    await Promise.all([ supabaseClient.from('entradas_articulos').insert([{ id: generateID('ENT'), articulo_id: articleId, nombre_articulo: article.nombre, cantidad: qty, fecha: displayDate }]), supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad + qty }).eq('id', articleId) ]);
+                }
+                showToast('ENTRADA REGISTRADA'); closeModal('modal-sales-input'); fetchInitialData();
+            } catch(err) { console.error(err); } finally { btn.innerHTML = 'GUARDAR'; btn.disabled = false; }
+        }
+
+        async function handleSalesItemSubmit(e) {
+            e.preventDefault(); const id = currentEditingSalesItemId || generateID('ART'); let code = document.getElementById('sales-item-code').value.trim().toUpperCase(); if (!currentEditingSalesItemId) { code = generateID('C'); } const nombre = document.getElementById('sales-item-name').value.trim().toUpperCase(); const cantidad = parseInt(document.getElementById('sales-item-qty').value) || 0; const fileInput = document.getElementById('sales-item-image'); 
+            const btn = document.querySelector('#form-sales-item button[type="submit"]'); btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>...'; btn.disabled = true; lucide.createIcons();
+            if (fileInput.files && fileInput.files[0]) { resizeAndCompressImage(fileInput.files[0], 600, 600, 0.7, (img) => { saveSalesItem(id, code, nombre, cantidad, img, btn); }); } else { saveSalesItem(id, code, nombre, cantidad, null, btn); }
+        }
+
+        async function saveSalesItem(id, id_articulo, nombre, cantidad, img, btn) {
+            try {
+                const data = { id, nombre, cantidad }; if (id_articulo) data.id_articulo = id_articulo; if (img) data.imagen_url = img;
+                if (currentEditingSalesItemId) { await supabaseClient.from('articulos_venta').update(data).eq('id', id); } else { await supabaseClient.from('articulos_venta').insert([data]); }
+                showToast('GUARDADO EXITOSO'); closeModal('modal-sales-item'); fetchInitialData();
+            } catch (err) { console.error(err); } finally { if(btn) { btn.innerHTML = currentEditingSalesItemId ? 'GUARDAR' : 'CREAR ARTÍCULO'; btn.disabled = false; } }
+        }
+
+        async function handleToolSubmit(e) {
+            e.preventDefault(); let id_articulo = document.getElementById('tool-id').value.trim().toUpperCase(); if (!currentEditingToolId) { id_articulo = generateID('HER').toUpperCase(); } const nombre = document.getElementById('tool-name').value.trim().toUpperCase(); const cantidad = parseInt(document.getElementById('tool-qty').value); const estante = document.getElementById('tool-shelf').value.trim().toUpperCase(); const fila = document.getElementById('tool-row').value.trim().toUpperCase(); const fileInput = document.getElementById('tool-image'); 
+            const btn = document.getElementById('modal-tool-submit'); btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>...'; btn.disabled = true; lucide.createIcons();
+            if (fileInput.files && fileInput.files[0]) { resizeAndCompressImage(fileInput.files[0], 600, 600, 0.7, (img) => { saveToolToInventory(id_articulo, nombre, cantidad, estante, fila, img, btn); }); } else { saveToolToInventory(id_articulo, nombre, cantidad, estante, fila, null, btn); }
+        }
+
+        async function saveToolToInventory(id_articulo, nombre, cantidad, estante, fila, img, btn) {
+            try {
+                const data = { id_articulo, nombre, cantidad, estante, fila }; if (img) data.imagen_url = img;
+                if (currentEditingToolId) { await supabaseClient.from('inventory').update(data).eq('id_articulo', id_articulo); } else { data.id = 'ID-'+Date.now(); await supabaseClient.from('inventory').insert([data]); }
+                showToast('GUARDADO EXITOSO'); closeModal('modal-tool'); fetchInitialData();
+            } catch (err) { console.error(err); } finally { if(btn) { btn.innerHTML = 'GUARDAR'; btn.disabled = false; } }
+        }
+
+        async function handleUserSubmit(e) {
+            e.preventDefault(); const name = document.getElementById('new-user-name').value.trim().toUpperCase(); const email = document.getElementById('new-user-email').value.trim(); const pass = document.getElementById('new-user-pass').value; const rol = document.getElementById('new-user-rol').value; const btn = document.getElementById('btn-create-user'); btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>...'; btn.disabled = true; lucide.createIcons();
+            try {
+                if (currentEditingUserId) { await supabaseClient.from('usuarios').update({ nombre_completo: name, rol: rol }).eq('id', currentEditingUserId); showToast('USUARIO ACTUALIZADO'); }
+                else { const tempClient = window.supabase.createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } }); const { data, error } = await tempClient.auth.signUp({ email, password: pass }); if (error) throw error; if (data.user) { for(let i = 0; i < 4; i++) { await new Promise(res => setTimeout(res, 800)); const { error: updErr } = await supabaseClient.from('usuarios').update({ nombre_completo: name, rol: rol }).eq('id', data.user.id); if (!updErr) break; } } showToast('NUEVO USUARIO'); }
+                resetUserForm(); fetchInitialData();
+            } catch (err) { console.error(err); } finally { btn.innerHTML = 'REGISTRAR / ACTUALIZAR'; btn.disabled = false; }
+        }
+
+        function confirmDeletion(id, type) {
+            itemToDelete = id; deleteType = type; const title = document.getElementById('confirm-title'); const desc = document.getElementById('confirm-desc'); const btn = document.getElementById('confirm-action-btn');
+            if(type === 'tool') { title.innerText = '¿ELIMINAR?'; desc.innerText = 'SE BORRARÁ DEL INVENTARIO.'; btn.onclick = executeDeleteTool; }
+            else if(type === 'loan') { title.innerText = '¿ELIMINAR?'; desc.innerText = 'VOLVERÁ AL INVENTARIO.'; btn.onclick = () => executeDeleteLoanRecord(id); }
+            else if(type === 'salesItem') { title.innerText = '¿ELIMINAR?'; desc.innerText = 'EL HISTORIAL QUEDARÁ HUÉRFANO.'; btn.onclick = executeDeleteSalesItem; }
+            else if(type === 'salesInput') { title.innerText = '¿ELIMINAR?'; desc.innerText = 'SE RESTARÁ DEL STOCK ACTUAL.'; btn.onclick = executeDeleteSalesInput; }
+            else if(type === 'salesOutput') { title.innerText = '¿ELIMINAR?'; desc.innerText = 'SE DEVOLVERÁ AL STOCK ACTUAL.'; btn.onclick = executeDeleteSalesOutput; }
+            openModal('modal-confirm');
+        }
+
+        async function executeDeleteTool() { if(!itemToDelete) return; try { await supabaseClient.from('inventory').delete().eq('id_articulo', itemToDelete); showToast('ELIMINADO'); fetchInitialData(); } catch (err) {} closeModal('modal-confirm'); }
+        async function executeDeleteLoanRecord(id) { const l = loans.find(x => x.id === id); if(!l) return; try { const promises = [supabaseClient.from('registro_prestamos').delete().eq('id', id)]; if (l.status === 'activo') { for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if (inv) promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad + t.borrowQty }).eq('id_articulo', t.id_articulo)); } } await Promise.all(promises); showToast('ELIMINADO'); fetchInitialData(); } catch (err) {} closeModal('modal-confirm'); closeModal('modal-history'); }
+        async function executeDeleteSalesItem() { if(!itemToDelete) return; try { await supabaseClient.from('articulos_venta').delete().eq('id', itemToDelete); showToast('ELIMINADO'); fetchInitialData(); } catch (err) {} closeModal('modal-confirm'); }
+        async function executeDeleteSalesInput() { if(!itemToDelete) return; const entry = entradasVenta.find(e => e.id === itemToDelete); if(!entry) return; const article = articulosVenta.find(a => a.id === entry.articulo_id); try { const promises = [supabaseClient.from('entradas_articulos').delete().eq('id', itemToDelete)]; if(article) promises.push(supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad - entry.cantidad }).eq('id', article.id)); await Promise.all(promises); showToast('ELIMINADA'); fetchInitialData(); } catch (err) {} closeModal('modal-confirm'); }
+        async function executeDeleteSalesOutput() { if(!itemToDelete) return; const output = salidasVenta.find(e => e.id === itemToDelete); if(!output) return; const article = articulosVenta.find(a => a.id === output.articulo_id); try { const promises = [supabaseClient.from('salidas_articulos').delete().eq('id', itemToDelete)]; if(article) promises.push(supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad + output.cantidad }).eq('id', article.id)); await Promise.all(promises); showToast('ELIMINADA'); fetchInitialData(); } catch (err) {} closeModal('modal-confirm'); }
+
+        function editTool(id) { const t = inventory.find(x => x.id_articulo === id); if(!t) return; currentEditingToolId = id; document.getElementById('tool-id').value = t.id_articulo; document.getElementById('tool-name').value = t.nombre; document.getElementById('tool-qty').value = t.cantidad; document.getElementById('tool-shelf').value = t.estante || ''; document.getElementById('tool-row').value = t.fila || ''; openModal('modal-tool'); }
+        function editLoan(id) { const l = loans.find(x => x.id === id); if (!l) return; currentEditingLoanId = id; document.getElementById('loan-applicant').value = l.applicant; document.getElementById('loan-deliverer').value = l.deliverer; selectedToolsForLoan = JSON.parse(JSON.stringify(l.tools)); renderSelectedTools(); closeModal('modal-history'); openModal('modal-loan'); }
+        function resetLoanForm() { const f = document.getElementById('form-loan'); if (f) f.reset(); selectedToolsForLoan = []; renderSelectedTools(); }
+        async function returnLoan(id) { const l = loans.find(x => x.id === id); if(!l) return; try { l.status = 'devuelto'; const promises = [supabaseClient.from('registro_prestamos').update({ estado: 'devuelto' }).eq('id', id)]; for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if(inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', t.id_articulo)); } } renderLoans(); renderInventory(); updateStats(); showToast('RECIBIDO'); await Promise.all(promises); fetchInitialData(); } catch (err) {} }
+        async function returnSingleTool(loanId, toolId) { const l = loans.find(x => x.id === loanId); if(!l) return; const tIndex = l.tools.findIndex(t => t.id_articulo === toolId); if(tIndex === -1) return; const t = l.tools[tIndex]; try { l.tools.splice(tIndex, 1); if (l.tools.length === 0) l.status = 'devuelto'; const inv = inventory.find(i => i.id_articulo === toolId); const promises = []; if (inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', toolId)); } if (l.tools.length === 0) { promises.push(supabaseClient.from('registro_prestamos').update({ estado: 'devuelto', herramientas: l.tools }).eq('id', loanId)); } else { promises.push(supabaseClient.from('registro_prestamos').update({ herramientas: l.tools }).eq('id', loanId)); } renderLoans(); renderInventory(); updateStats(); showToast('ARTÍCULO RECIBIDO'); await Promise.all(promises); fetchInitialData(); } catch(err) { console.error(err); } }
+        function editSalesItem(id) { const i = articulosVenta.find(x => x.id === id); if(!i) return; currentEditingSalesItemId = i.id; document.getElementById('sales-item-id').value = i.id; document.getElementById('sales-item-code').value = i.id_articulo || ''; document.getElementById('sales-item-name').value = i.nombre; document.getElementById('sales-item-qty').value = i.cantidad; openModal('modal-sales-item'); }
+        function editSalesInput(id) { const e = entradasVenta.find(x => x.id === id); if(!e) return; currentEditingSalesInputId = id; closeModal('modal-sales-history'); openModal('modal-sales-input'); selectSalesArticle('in', e.articulo_id); document.getElementById('sales-in-qty').value = e.cantidad; const dp = e.fecha.split('/'); if(dp.length === 3) document.getElementById('sales-in-date').value = `${dp[2]}-${dp[1]}-${dp[0]}`; }
+        function editSalesOutput(id) { const s = salidasVenta.find(x => x.id === id); if(!s) return; currentEditingSalesOutputId = id; closeModal('modal-sales-history'); openModal('modal-sales-output'); selectedSalesOutArticles = []; const a = articulosVenta.find(x => x.id === s.articulo_id); if(a) { selectedSalesOutArticles.push({...a, outQty: s.cantidad}); renderSelectedSalesOut(); } document.getElementById('sales-out-uso').value = s.para_uso_en || ''; document.getElementById('sales-out-recibe').value = s.recibe || ''; }
+        function editUserForm(id) { const u = systemUsers.find(x => x.id === id); if(!u) return; currentEditingUserId = id; document.getElementById('new-user-name').value = u.nombre_completo || ''; const em = document.getElementById('new-user-email'); em.value = u.email; em.readOnly = true; em.classList.add('opacity-50'); const pa = document.getElementById('new-user-pass'); pa.required = false; pa.value = ''; document.getElementById('new-user-rol').value = u.rol || 'usuario'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function resetUserForm() { document.getElementById('form-user').reset(); currentEditingUserId = null; const em = document.getElementById('new-user-email'); em.readOnly = false; em.classList.remove('opacity-50'); document.getElementById('new-user-pass').required = true; }
+        function getElapsedDays(ts) { return Math.floor((new Date() - new Date(ts)) / 86400000); }
+        
+        function openToolHistoryModal(id_articulo) {
+            const tool = inventory.find(t => t.id_articulo === id_articulo); if (!tool) return;
+            document.getElementById('history-tool-name').innerText = tool.nombre.toUpperCase(); document.getElementById('history-tool-id').innerText = tool.id_articulo.toUpperCase(); 
+            const img = document.getElementById('history-tool-image-container'); if (img) { img.innerHTML = tool.imagen_url ? `<img src="${tool.imagen_url}" class="w-full h-full object-cover">` : '<i data-lucide="wrench" class="text-slate-300 w-5 h-5"></i>'; img.onclick = () => { if(tool.imagen_url) openImageViewer(tool.imagen_url); }; }
+            document.getElementById('history-tool-location').innerText = `EST: ${(tool.estante || 'N/A').toUpperCase()} - FILA ${(tool.fila || 'N/A').toUpperCase()}`; document.getElementById('history-tool-qty').innerText = `${tool.cantidad} UNIDADES`;
+            const content = document.getElementById('history-content'); content.innerHTML = '';
+            const hist = loans.filter(l => l.tools.some(t => t.id_articulo === id_articulo));
+            if (hist.length === 0) content.innerHTML = `<div class="py-6 text-center text-slate-400"><p class="text-[10px] font-bold uppercase tracking-widest">SIN REGISTROS</p></div>`;
+            else {
+                hist.forEach(l => {
+                    const isP = l.status === 'activo'; const te = l.tools.find(t => t.id_articulo === id_articulo);
+                    const actions = currentUserRole !== 'supervisor' ? `<div class="flex gap-1"><button onclick="event.stopPropagation(); editLoan('${l.id}')" class="p-1 hover:bg-white rounded transition text-slate-400 hover:text-blue-600"><i data-lucide="pencil" class="w-3 h-3"></i></button><button onclick="event.stopPropagation(); confirmDeletion('${l.id}', 'loan')" class="p-1 hover:bg-white rounded transition text-slate-400 hover:text-red-600"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div>` : '';
+                    content.innerHTML += `<div class="p-2.5 rounded-lg border ${isP ? 'border-red-100 bg-red-50' : 'border-emerald-100 bg-emerald-50'} shadow-sm mb-2"><div class="flex justify-between items-start mb-1"><span class="text-[8px] font-black uppercase ${isP ? 'text-red-600' : 'text-emerald-600'}">${isP ? 'PENDIENTE' : 'DEVUELTO'}</span><div class="flex items-center gap-1.5"><span class="text-[8px] font-bold text-slate-400">${l.date}</span>${actions}</div></div><p class="text-[11px] font-black text-slate-800 uppercase mb-0.5">${l.applicant}</p><p class="text-[9px] text-slate-500 font-bold uppercase">CANT: ${te.borrowQty} | ENTREGÓ: ${l.deliverer}</p></div>`;
+                });
+            }
+            lucide.createIcons(); openModal('modal-history');
+        }
+        
+        function openSalesHistoryModal(itemId) {
+            const article = articulosVenta.find(a => a.id === itemId); if(!article) return; currentHistoryItemId = itemId; 
+            document.getElementById('sales-history-name').innerText = article.nombre; document.getElementById('sales-history-code').innerText = (article.id_articulo || 'S/C').toUpperCase();
+            const img = document.getElementById('sales-history-image-container'); if (img) { img.innerHTML = article.imagen_url ? `<img src="${article.imagen_url}" class="w-full h-full object-cover">` : '<i data-lucide="shopping-bag" class="text-slate-300 w-5 h-5"></i>'; img.onclick = () => { if(article.imagen_url) openImageViewer(article.imagen_url); }; }
+            const v = document.getElementById('sales-history-qty'); v.innerText = article.cantidad;
+            document.getElementById('sales-history-qty-container').className = article.cantidad > 0 ? 'p-4 border-b border-emerald-100 bg-emerald-50/50 text-center text-emerald-600' : 'p-4 border-b border-red-100 bg-red-50/50 text-center text-red-600';
+            const w = document.getElementById('sales-history-warning'); if(article.cantidad > 0) w.classList.add('hidden'); else { w.classList.remove('hidden'); w.innerHTML = 'REPONER STOCK'; }
+            if (currentUserRole === 'admin') switchHistoryTab('in'); else switchHistoryTab('out');
+            
+            const inC = document.getElementById('sales-history-in-content'); const outC = document.getElementById('sales-history-out-content'); inC.innerHTML = ''; outC.innerHTML = '';
+            const rIn = entradasVenta.filter(e => e.articulo_id === itemId); const rOut = salidasVenta.filter(s => s.articulo_id === itemId);
+            if(rIn.length===0) inC.innerHTML = '<p class="text-[9px] text-slate-400 font-bold text-center">VACÍO</p>';
+            else rIn.forEach(m => { const ac = currentUserRole === 'admin' ? `<div class="flex gap-1 pl-1.5"><button onclick="editSalesInput('${m.id}')"><i data-lucide="pencil" class="w-3 h-3 text-indigo-400 hover:text-indigo-600"></i></button><button onclick="confirmDeletion('${m.id}', 'salesInput')"><i data-lucide="trash-2" class="w-3 h-3 text-indigo-400 hover:text-red-500"></i></button></div>` : ''; inC.innerHTML += `<div class="p-2 border border-indigo-100 bg-indigo-50/30 rounded mb-1.5"><div class="flex justify-between items-center"><span class="text-[8px] font-black text-indigo-600">ENTRADA</span><div class="flex items-center gap-1"><span class="text-[8px] text-slate-400">${m.fecha}</span>${ac}</div></div><p class="text-sm font-black">+${m.cantidad}</p></div>`; });
+            if(rOut.length===0) outC.innerHTML = '<p class="text-[9px] text-slate-400 font-bold text-center">VACÍO</p>';
+            else rOut.forEach(m => { const ac = currentUserRole === 'admin' ? `<div class="flex gap-1 pl-1.5"><button onclick="editSalesOutput('${m.id}')"><i data-lucide="pencil" class="w-3 h-3 text-orange-400 hover:text-orange-600"></i></button><button onclick="confirmDeletion('${m.id}', 'salesOutput')"><i data-lucide="trash-2" class="w-3 h-3 text-orange-400 hover:text-red-500"></i></button></div>` : ''; outC.innerHTML += `<div class="p-2 border border-orange-100 bg-orange-50/30 rounded mb-1.5"><div class="flex justify-between items-center"><span class="text-[8px] font-black text-orange-600">SALIDA</span><div class="flex items-center gap-1"><span class="text-[8px] text-slate-400">${m.fecha}</span>${ac}</div></div><p class="text-sm font-black">-${m.cantidad}</p><p class="text-[7px] text-slate-500 mt-1 uppercase">USO: ${m.para_uso_en||'N/A'} | RECIBE: ${m.recibe}</p></div>`; });
+            lucide.createIcons();
+            
+            const btnIn = document.getElementById('btn-quick-in-hidden'); const btnOut = document.getElementById('btn-quick-out-hidden');
+            if(btnIn) btnIn.onclick = () => { closeModal('modal-sales-history'); openModal('modal-sales-input'); selectSalesArticle('in', itemId); };
+            if(btnOut) btnOut.onclick = () => { closeModal('modal-sales-history'); openModal('modal-sales-output'); selectSalesArticleOut(itemId); };
+            
+            openModal('modal-sales-history');
+        }
+
+        function switchHistoryTab(tab) {
+            document.getElementById('view-history-in').classList.toggle('hidden', tab !== 'in'); document.getElementById('view-history-out').classList.toggle('hidden', tab !== 'out');
+            document.getElementById('tab-history-in').className = tab === 'in' ? "admin-only flex-1 py-2 text-[9px] font-black uppercase tracking-widest text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/30" : "admin-only flex-1 py-2 text-[9px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent";
+            document.getElementById('tab-history-out').className = tab === 'out' ? "flex-1 py-2 text-[9px] font-black uppercase tracking-widest text-orange-600 border-b-2 border-orange-600 bg-orange-50/30" : "flex-1 py-2 text-[9px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent";
+        }
+
+        function exportToExcel(type) {
+            let data = []; let fn = ''; let sn = '';
+            if (type === 'herramientas') { if (inventory.length === 0) return; data = inventory.map(i => ({ 'ID': i.id_articulo, 'NOMBRE': i.nombre, 'CANT': i.cantidad, 'EST': i.estante, 'FILA': i.fila })); fn = 'Inventario.xlsx'; sn = 'Herramientas'; }
+            else if (type === 'consumibles') { if (articulosVenta.length === 0) return; data = articulosVenta.map(i => ({ 'CÓDIGO': i.id_articulo, 'NOMBRE': i.nombre, 'CANT': i.cantidad })); fn = 'Consumibles.xlsx'; sn = 'Consumibles'; }
+            if (data.length > 0) { const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, sn); XLSX.writeFile(wb, fn); showToast('EXPORTADO'); }
+        }
+
+        function exportItemHistory(type) {
+            if (!currentHistoryItemId) return; const a = articulosVenta.find(x => x.id === currentHistoryItemId); if (!a) return;
+            let data = []; let fn = ''; let sn = ''; const safeName = a.nombre.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            if (type === 'in') { const inputs = entradasVenta.filter(e => e.articulo_id === currentHistoryItemId); if (inputs.length === 0) return; data = inputs.map(i => ({ 'FECHA': i.fecha, 'CANT': i.cantidad })); fn = `Ent_${safeName}.xlsx`; sn = 'Entradas'; }
+            else if (type === 'out') { const outputs = salidasVenta.filter(s => s.articulo_id === currentHistoryItemId); if (outputs.length === 0) return; data = outputs.map(i => ({ 'FECHA': i.fecha, 'CANT': i.cantidad, 'SUPERV': i.supervisor, 'RECIBE': i.recibe, 'USO': i.para_uso_en })); fn = `Sal_${safeName}.xlsx`; sn = 'Salidas'; }
+            if (data.length > 0) { const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, sn); XLSX.writeFile(wb, fn); showToast('EXPORTADO'); }
+        }
+
+        function openModal(id) { 
+            const el = document.getElementById(id); el.classList.remove('hidden'); el.classList.add('flex'); 
+            if(id==='modal-loan'){ document.getElementById('modal-loan-title').innerText = currentEditingLoanId?'EDITAR PRÉSTAMO':'NUEVO PRÉSTAMO'; document.getElementById('modal-loan-submit').innerText = currentEditingLoanId?'GUARDAR':'REGISTRAR'; if(!currentEditingLoanId)resetLoanForm(); }
+            if(id==='modal-sales-output'){ if(!currentEditingSalesOutputId){ selectedSalesOutArticles=[]; renderSelectedSalesOut(); document.getElementById('sales-out-uso').value=''; document.getElementById('sales-out-recibe').value=''; } }
+        }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); if(id==='modal-tool') { currentEditingToolId=null; document.getElementById('form-tool').reset(); } if(id==='modal-loan') currentEditingLoanId=null; if(id==='modal-sales-item') { currentEditingSalesItemId=null; document.getElementById('form-sales-item').reset(); } if(id==='modal-sales-input') { currentEditingSalesInputId=null; document.getElementById('form-sales-input').reset(); clearSalesSelection('in'); setCurrentDateInputs(); } if(id==='modal-sales-output') { currentEditingSalesOutputId=null; document.getElementById('form-sales-output').reset(); } }
+        function openImageViewer(s) { const v = document.getElementById('modal-image-viewer'); const i = document.getElementById('full-screen-image'); i.src = s; v.classList.remove('hidden'); v.classList.add('flex'); }
+        function closeImageViewer() { document.getElementById('modal-image-viewer').classList.add('hidden'); document.getElementById('modal-image-viewer').classList.remove('flex'); }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.setAttribute('data-lucide', 'eye-off');
+                } else {
+                    input.type = 'password';
+                    icon.setAttribute('data-lucide', 'eye');
+                }
+                lucide.createIcons();
+            }
+        }
+
+        function showToast(m, t = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            const colors = { success: 'bg-emerald-600', error: 'bg-red-600', info: 'bg-blue-600' };
+            toast.className = `${colors[t] || colors.success} text-white px-3 py-2.5 rounded-lg shadow-lg flex items-center gap-2.5 transform transition-all duration-300 opacity-0 text-[10px] font-black uppercase tracking-wider`;
+            toast.innerHTML = `<i data-lucide="${t==='success'?'check-circle':t==='error'?'alert-circle':'info'}" class="w-3.5 h-3.5 shrink-0"></i><p>${m}</p>`;
+            container.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => toast.classList.remove('opacity-0'), 10);
+            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        function updateFullscreenIcon() {
+            const icon = document.getElementById('fs-icon');
+            if(!icon) return;
+            icon.setAttribute('data-lucide', document.fullscreenElement ? 'minimize' : 'maximize');
+            lucide.createIcons();
+        }
+        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+
+        function resizeAndCompressImage(file, maxWidth, maxHeight, quality, callback) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    let width = img.width; let height = img.height;
+                    if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } }
+                    else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    callback(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
