@@ -78,7 +78,7 @@
 
     <!-- ============================================== -->
     <!-- CONTENEDOR PRINCIPAL                           -->
-    <!-- CONTENEDOR PRINCIPAL DE LA APP -->
+    <!-- ============================================== -->
     <div id="app-container" class="flex-1 flex flex-col h-full hidden opacity-0 transition-opacity duration-300">
         
         <!-- BARRA DE NAVEGACIÓN -->
@@ -106,13 +106,15 @@
                 <button onclick="switchView('home')" id="tab-home" class="px-2 sm:px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-white uppercase tracking-wider shadow-sm">
                     <i data-lucide="home" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">INICIO</span>
                 </button>
-                <button onclick="switchView('inventory')" id="tab-inventory" class="hide-from-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
+                <!-- Ocultado por solicitud de usuario -->
+                <button onclick="switchView('inventory')" id="tab-inventory" class="!hidden hide-from-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
                     <i data-lucide="package" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">HERRAMIENTAS</span><span class="sm:hidden">HERR.</span>
                 </button>
                 <button onclick="switchView('loans')" id="tab-loans" class="hide-from-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
                     <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">PRÉSTAMOS</span><span class="sm:hidden">PRÉST.</span>
                 </button>
-                <button onclick="switchView('sales')" id="tab-sales" class="admin-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
+                <!-- Ocultado por solicitud de usuario -->
+                <button onclick="switchView('sales')" id="tab-sales" class="!hidden admin-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
                     <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">CONSUMIBLES</span><span class="sm:hidden">CONS.</span>
                 </button>
                 <button onclick="switchView('reports')" id="tab-reports" class="admin-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
@@ -444,7 +446,8 @@
                             <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                 <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
                             </div>
-                            <input type="text" id="tool-search" class="w-full pl-7 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="BUSCAR PARA AGREGAR...">
+                            <input type="text" id="tool-search" class="w-full pl-7 pr-8 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="BUSCAR PARA AGREGAR...">
+                            <button type="button" onclick="clearSearchInput('tool-search')" class="absolute right-0 top-0 bottom-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
                             <div id="search-results" class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs"></div>
                         </div>
 
@@ -488,7 +491,7 @@
                     <div>
                         <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Imagen</label>
                         <div class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-slate-50 flex items-center text-xs text-slate-500 overflow-hidden">
-                            <input type="file" id="sales-item-image" accept="image/*" class="block w-full text-[10px] font-bold text-slate-500 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer uppercase">
+                            <input type="file" id="sales-item-image" accept="image/*" class="block w-full text-[10px] font-bold text-slate-500 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer uppercase">
                         </div>
                     </div>
                 </div>
@@ -513,7 +516,8 @@
                         <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">ARTÍCULO *</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none"><i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i></div>
-                            <input type="text" id="sales-in-search" oninput="searchSalesArticles('in')" class="w-full pl-7 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" placeholder="BUSCAR...">
+                            <input type="text" id="sales-in-search" oninput="searchSalesArticles('in')" class="w-full pl-7 pr-8 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" placeholder="BUSCAR...">
+                            <button type="button" onclick="clearSearchInput('sales-in-search')" class="absolute right-0 top-0 bottom-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
                             <div id="sales-in-results" class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs"></div>
                         </div>
                         <div id="sales-in-selected" class="hidden mt-1.5 p-2 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-between">
@@ -562,7 +566,8 @@
                         <label class="block font-bold text-slate-700 mb-1.5 uppercase text-[10px]">ARTÍCULOS A RETIRAR *</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none"><i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i></div>
-                            <input type="text" id="sales-out-search" oninput="searchSalesArticles('out')" class="w-full pl-7 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" placeholder="BUSCAR ARTÍCULO...">
+                            <input type="text" id="sales-out-search" oninput="searchSalesArticles('out')" class="w-full pl-7 pr-8 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" placeholder="BUSCAR ARTÍCULO...">
+                            <button type="button" onclick="clearSearchInput('sales-out-search')" class="absolute right-0 top-0 bottom-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
                             <div id="sales-out-results" class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs"></div>
                         </div>
                         <div class="mt-3">
@@ -995,23 +1000,27 @@
         // ==========================================
         //  BUSQUEDA Y MULTISELECCIÓN
         // ==========================================
+        let toolSearchTimeout;
         function setupSearchListeners() {
             const inpTool = document.getElementById('tool-search');
             const resTool = document.getElementById('search-results');
             if(inpTool && resTool) {
                 inpTool.addEventListener('input', () => {
-                    const q = inpTool.value.toLowerCase();
-                    if(!q) { resTool.classList.add('hidden'); return; }
-                    const match = inventory.filter(t => (t.nombre||'').toLowerCase().includes(q) || (t.id_articulo||'').toLowerCase().includes(q));
-                    if(match.length === 0) { resTool.innerHTML = `<div class="p-4 text-center text-slate-400 font-bold uppercase text-[10px]">SIN RESULTADOS</div>`; resTool.classList.remove('hidden'); return; }
-                    resTool.innerHTML = match.map(t => {
-                        const ex = selectedToolsForLoan.find(s => s.id_articulo === t.id_articulo);
-                        return `<div class="p-2 border-b ${t.cantidad > 0 ? (ex ? 'bg-emerald-50 hover:bg-emerald-100' : 'hover:bg-slate-50 cursor-pointer') : 'opacity-50 cursor-not-allowed bg-slate-50'} flex justify-between items-center transition" onclick="${t.cantidad > 0 ? `selectTool('${t.id_articulo}', event)` : `showToast('AGOTADA', 'error'); if(event) event.stopPropagation();`}">
-                            <div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0 flex items-center justify-center shadow-sm" onclick="${t.imagen_url ? `openImageViewer('${t.imagen_url}'); if(event) event.stopPropagation();` : ''}">${t.imagen_url ? `<img src="${t.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="image" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="font-bold text-slate-800 uppercase truncate text-[11px] leading-tight mb-0.5">${t.nombre}</p><p class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">CÓD: ${t.id_articulo || 'S/C'}</p></div></div>
-                            <div class="flex items-center gap-1.5 ml-2">${ex ? `<span class="text-emerald-700 bg-emerald-100 border border-emerald-200 font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm flex items-center gap-1"><i data-lucide="check" class="w-2.5 h-2.5"></i> (${ex.borrowQty})</span>` : ''}<span class="${t.cantidad > 0 ? 'text-emerald-700 bg-emerald-100 border border-emerald-200' : 'text-red-700 bg-red-100 border border-red-200'} font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">DISP: ${t.cantidad}</span></div>
-                        </div>`;
-                    }).join('') + `<div class="sticky bottom-0 w-full p-1.5 bg-slate-50 border-t border-slate-200 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"><button type="button" onclick="closeDropdown('search-results', 'tool-search')" class="w-full bg-[#059669] text-white py-2 rounded-md font-black uppercase tracking-widest text-[10px] hover:bg-emerald-700 transition shadow-sm active:scale-[0.98]">APLICAR SELECCIÓN</button></div>`;
-                    resTool.classList.remove('hidden'); lucide.createIcons();
+                    clearTimeout(toolSearchTimeout);
+                    toolSearchTimeout = setTimeout(() => {
+                        const q = inpTool.value.toLowerCase().trim();
+                        if(!q) { resTool.classList.add('hidden'); return; }
+                        const match = inventory.filter(t => (t.nombre||'').toLowerCase().includes(q));
+                        if(match.length === 0) { resTool.innerHTML = `<div class="p-4 text-center text-slate-400 font-bold uppercase text-[10px]">SIN RESULTADOS</div>`; resTool.classList.remove('hidden'); return; }
+                        resTool.innerHTML = match.map(t => {
+                            const ex = selectedToolsForLoan.find(s => s.id_articulo === t.id_articulo);
+                            return `<div class="p-2 border-b ${t.cantidad > 0 ? (ex ? 'bg-emerald-50 hover:bg-emerald-100' : 'hover:bg-slate-50 cursor-pointer') : 'opacity-50 cursor-not-allowed bg-slate-50'} flex justify-between items-center transition" onclick="${t.cantidad > 0 ? `selectTool('${t.id_articulo}', event)` : `showToast('AGOTADA', 'error'); if(event) event.stopPropagation();`}">
+                                <div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0 flex items-center justify-center shadow-sm" onclick="${t.imagen_url ? `openImageViewer('${t.imagen_url}'); if(event) event.stopPropagation();` : ''}">${t.imagen_url ? `<img src="${t.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="image" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="font-bold text-slate-800 uppercase truncate text-[11px] leading-tight mb-0.5">${t.nombre}</p><p class="text-[9px] text-slate-400 uppercase tracking-widest font-bold">CÓD: ${t.id_articulo || 'S/C'}</p></div></div>
+                                <div class="flex items-center gap-1.5 ml-2">${ex ? `<span class="text-emerald-700 bg-emerald-100 border border-emerald-200 font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm flex items-center gap-1"><i data-lucide="check" class="w-2.5 h-2.5"></i> (${ex.borrowQty})</span>` : ''}<span class="${t.cantidad > 0 ? 'text-emerald-700 bg-emerald-100 border border-emerald-200' : 'text-red-700 bg-red-100 border border-red-200'} font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">DISP: ${t.cantidad}</span></div>
+                            </div>`;
+                        }).join('') + `<div class="sticky bottom-0 w-full p-1.5 bg-slate-50 border-t border-slate-200 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"><button type="button" onclick="closeDropdown('search-results', 'tool-search')" class="w-full bg-[#059669] text-white py-2 rounded-md font-black uppercase tracking-widest text-[10px] hover:bg-emerald-700 transition shadow-sm active:scale-[0.98]">APLICAR SELECCIÓN</button></div>`;
+                        resTool.classList.remove('hidden'); lucide.createIcons();
+                    }, 400); // 400 milisegundos de espera
                 });
             }
 
@@ -1026,6 +1035,7 @@
         }
 
         function closeDropdown(r, s) { document.getElementById(r).classList.add('hidden'); document.getElementById(s).value = ''; }
+        function clearSearchInput(id) { const i = document.getElementById(id); if(i) { i.value = ''; i.dispatchEvent(new Event('input')); i.focus(); } }
 
         function selectTool(id, ev) {
             if(ev) ev.stopPropagation();
@@ -1049,25 +1059,29 @@
         function removeFromSelection(id) { selectedToolsForLoan = selectedToolsForLoan.filter(x => x.id_articulo !== id); renderSelectedTools(); document.getElementById('tool-search').dispatchEvent(new Event('input')); }
         function updSel(id, d) { const s = selectedToolsForLoan.find(x => x.id_articulo === id); const inv = inventory.find(i => i.id_articulo === id); if(s && inv) { const n = s.borrowQty + d; if(n > 0 && n <= inv.cantidad) s.borrowQty = n; else if(n > inv.cantidad) showToast('LÍMITE ALCANZADO', 'error'); else if(n === 0) return removeFromSelection(id); renderSelectedTools(); document.getElementById('tool-search').dispatchEvent(new Event('input')); } }
 
+        let salesSearchTimeout;
         function searchSalesArticles(type) {
-            const q = document.getElementById(`sales-${type}-search`).value.toLowerCase();
-            const res = document.getElementById(`sales-${type}-results`);
-            if(!q) { res.classList.add('hidden'); return; }
-            const match = articulosVenta.filter(t => (t.nombre||'').toLowerCase().includes(q) || ((t.id_articulo||'').toLowerCase().includes(q)));
-            if(match.length === 0) { res.innerHTML = `<div class="p-4 text-center text-slate-400 font-bold uppercase text-[10px]">SIN RESULTADOS</div>`; res.classList.remove('hidden'); return; }
+            clearTimeout(salesSearchTimeout);
+            salesSearchTimeout = setTimeout(() => {
+                const q = document.getElementById(`sales-${type}-search`).value.toLowerCase().trim();
+                const res = document.getElementById(`sales-${type}-results`);
+                if(!q) { res.classList.add('hidden'); return; }
+                const match = articulosVenta.filter(t => (t.nombre||'').toLowerCase().includes(q));
+                if(match.length === 0) { res.innerHTML = `<div class="p-4 text-center text-slate-400 font-bold uppercase text-[10px]">SIN RESULTADOS</div>`; res.classList.remove('hidden'); return; }
 
-            if(type === 'out') {
-                res.innerHTML = match.map(t => {
-                    const ex = selectedSalesOutArticles.find(s => s.id === t.id);
-                    return `<div class="p-2 border-b ${t.cantidad > 0 ? (ex ? 'bg-orange-50 hover:bg-orange-100' : 'hover:bg-slate-50 cursor-pointer') : 'opacity-50 cursor-not-allowed bg-slate-50'} flex justify-between items-center transition" onclick="${t.cantidad > 0 ? `selectSalesArticleOut('${t.id}', event)` : `showToast('AGOTADO', 'error'); if(event) event.stopPropagation();`}">
-                        <div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0 flex items-center justify-center shadow-sm" onclick="${t.imagen_url ? `openImageViewer('${t.imagen_url}'); if(event) event.stopPropagation();` : ''}">${t.imagen_url ? `<img src="${t.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="package" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="font-bold text-slate-800 uppercase truncate text-[11px] leading-tight mb-0.5">${t.nombre}</p><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">CÓD: ${t.id_articulo || 'S/C'}</p></div></div>
-                        <div class="flex items-center gap-1.5 ml-2">${ex ? `<span class="text-orange-700 bg-orange-100 border border-orange-200 font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm flex items-center gap-1"><i data-lucide="check" class="w-2.5 h-2.5"></i> (${ex.outQty})</span>` : ''}<span class="${t.cantidad > 0 ? 'text-emerald-700 bg-emerald-100 border border-emerald-200' : 'text-red-700 bg-red-100 border border-red-200'} font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">DISP: ${t.cantidad}</span></div>
-                    </div>`;
-                }).join('') + `<div class="sticky bottom-0 w-full p-1.5 bg-slate-50 border-t border-slate-200 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"><button type="button" onclick="closeDropdown('sales-out-results', 'sales-out-search')" class="w-full bg-[#ea580c] text-white py-2 rounded-md font-black uppercase tracking-widest text-[10px] hover:bg-orange-700 transition shadow-sm active:scale-[0.98]">APLICAR SELECCIÓN</button></div>`;
-            } else {
-                res.innerHTML = match.map(t => `<div class="p-2 border-b hover:bg-indigo-50 cursor-pointer flex justify-between items-center transition" onclick="selectSalesArticle('in', '${t.id}')"><div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0 flex items-center justify-center shadow-sm">${t.imagen_url ? `<img src="${t.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="package" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="font-bold text-slate-800 uppercase truncate text-[11px] leading-tight mb-0.5">${t.nombre}</p><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">CÓD: ${t.id_articulo || 'S/C'}</p></div></div><span class="text-indigo-700 font-black bg-indigo-100 border border-indigo-200 px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">SELECCIONAR</span></div>`).join('');
-            }
-            res.classList.remove('hidden'); lucide.createIcons();
+                if(type === 'out') {
+                    res.innerHTML = match.map(t => {
+                        const ex = selectedSalesOutArticles.find(s => s.id === t.id);
+                        return `<div class="p-2 border-b ${t.cantidad > 0 ? (ex ? 'bg-orange-50 hover:bg-orange-100' : 'hover:bg-slate-50 cursor-pointer') : 'opacity-50 cursor-not-allowed bg-slate-50'} flex justify-between items-center transition" onclick="${t.cantidad > 0 ? `selectSalesArticleOut('${t.id}', event)` : `showToast('AGOTADO', 'error'); if(event) event.stopPropagation();`}">
+                            <div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0 flex items-center justify-center shadow-sm" onclick="${t.imagen_url ? `openImageViewer('${t.imagen_url}'); if(event) event.stopPropagation();` : ''}">${t.imagen_url ? `<img src="${t.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="package" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="font-bold text-slate-800 uppercase truncate text-[11px] leading-tight mb-0.5">${t.nombre}</p><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">CÓD: ${t.id_articulo || 'S/C'}</p></div></div>
+                            <div class="flex items-center gap-1.5 ml-2">${ex ? `<span class="text-orange-700 bg-orange-100 border border-orange-200 font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm flex items-center gap-1"><i data-lucide="check" class="w-2.5 h-2.5"></i> (${ex.outQty})</span>` : ''}<span class="${t.cantidad > 0 ? 'text-emerald-700 bg-emerald-100 border border-emerald-200' : 'text-red-700 bg-red-100 border border-red-200'} font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">DISP: ${t.cantidad}</span></div>
+                        </div>`;
+                    }).join('') + `<div class="sticky bottom-0 w-full p-1.5 bg-slate-50 border-t border-slate-200 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"><button type="button" onclick="closeDropdown('sales-out-results', 'sales-out-search')" class="w-full bg-[#ea580c] text-white py-2 rounded-md font-black uppercase tracking-widest text-[10px] hover:bg-orange-700 transition shadow-sm active:scale-[0.98]">APLICAR SELECCIÓN</button></div>`;
+                } else {
+                    res.innerHTML = match.map(t => `<div class="p-2 border-b hover:bg-indigo-50 cursor-pointer flex justify-between items-center transition" onclick="selectSalesArticle('in', '${t.id}')"><div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0 flex items-center justify-center shadow-sm">${t.imagen_url ? `<img src="${t.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="package" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="font-bold text-slate-800 uppercase truncate text-[11px] leading-tight mb-0.5">${t.nombre}</p><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">CÓD: ${t.id_articulo || 'S/C'}</p></div></div><span class="text-indigo-700 font-black bg-indigo-100 border border-indigo-200 px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">SELECCIONAR</span></div>`).join('');
+                }
+                res.classList.remove('hidden'); lucide.createIcons();
+            }, 400);
         }
 
         function selectSalesArticleOut(id, ev) { if(ev) ev.stopPropagation(); const t = articulosVenta.find(i => i.id === id); if(!t || t.cantidad <= 0) return; const ex = selectedSalesOutArticles.find(s => s.id === id); if(ex) { if(ex.outQty < t.cantidad) ex.outQty++; } else { selectedSalesOutArticles.push({...t, outQty: 1}); } renderSelectedSalesOut(); document.getElementById('sales-out-search').dispatchEvent(new Event('input')); }
@@ -1208,7 +1222,7 @@
         function editTool(id) { const t = inventory.find(x => x.id_articulo === id); if(!t) return; currentEditingToolId = id; document.getElementById('tool-id').value = t.id_articulo; document.getElementById('tool-name').value = t.nombre; document.getElementById('tool-qty').value = t.cantidad; document.getElementById('tool-shelf').value = t.estante || ''; document.getElementById('tool-row').value = t.fila || ''; openModal('modal-tool'); }
         function editLoan(id) { const l = loans.find(x => x.id === id); if (!l) return; currentEditingLoanId = id; document.getElementById('loan-applicant').value = l.applicant; document.getElementById('loan-deliverer').value = l.deliverer; selectedToolsForLoan = JSON.parse(JSON.stringify(l.tools)); renderSelectedTools(); closeModal('modal-history'); openModal('modal-loan'); }
         function resetLoanForm() { const f = document.getElementById('form-loan'); if (f) f.reset(); selectedToolsForLoan = []; renderSelectedTools(); }
-        async function returnLoan(id) { const l = loans.find(x => x.id === id); if(!l) return; try { l.status = 'devuelto'; const promises = [supabaseClient.from('registro_prestamos').update({ estado: 'devuelto' }).eq('id', id)]; for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if(inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', t.id_articulo)); } } renderLoans(); renderInventory(); updateStats(); showToast('RECIBIDO'); await Promise.all(promises); fetchInitialData(); } catch (err) {} }
+        async function returnLoan(id) { if(!confirm('¿MARCAR DEVOLUCIÓN?')) return; const l = loans.find(x => x.id === id); if(!l) return; try { l.status = 'devuelto'; const promises = [supabaseClient.from('registro_prestamos').update({ estado: 'devuelto' }).eq('id', id)]; for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if(inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', t.id_articulo)); } } renderLoans(); renderInventory(); updateStats(); showToast('RECIBIDO'); await Promise.all(promises); fetchInitialData(); } catch (err) {} }
         async function returnSingleTool(loanId, toolId) { const l = loans.find(x => x.id === loanId); if(!l) return; const tIndex = l.tools.findIndex(t => t.id_articulo === toolId); if(tIndex === -1) return; const t = l.tools[tIndex]; try { l.tools.splice(tIndex, 1); if (l.tools.length === 0) l.status = 'devuelto'; const inv = inventory.find(i => i.id_articulo === toolId); const promises = []; if (inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', toolId)); } if (l.tools.length === 0) { promises.push(supabaseClient.from('registro_prestamos').update({ estado: 'devuelto', herramientas: l.tools }).eq('id', loanId)); } else { promises.push(supabaseClient.from('registro_prestamos').update({ herramientas: l.tools }).eq('id', loanId)); } renderLoans(); renderInventory(); updateStats(); showToast('ARTÍCULO RECIBIDO'); await Promise.all(promises); fetchInitialData(); } catch(err) { console.error(err); } }
         function editSalesItem(id) { const i = articulosVenta.find(x => x.id === id); if(!i) return; currentEditingSalesItemId = i.id; document.getElementById('sales-item-id').value = i.id; document.getElementById('sales-item-code').value = i.id_articulo || ''; document.getElementById('sales-item-name').value = i.nombre; document.getElementById('sales-item-qty').value = i.cantidad; openModal('modal-sales-item'); }
         function editSalesInput(id) { const e = entradasVenta.find(x => x.id === id); if(!e) return; currentEditingSalesInputId = id; closeModal('modal-sales-history'); openModal('modal-sales-input'); selectSalesArticle('in', e.articulo_id); document.getElementById('sales-in-qty').value = e.cantidad; const dp = e.fecha.split('/'); if(dp.length === 3) document.getElementById('sales-in-date').value = `${dp[2]}-${dp[1]}-${dp[0]}`; }
