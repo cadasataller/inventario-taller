@@ -113,6 +113,9 @@
                 <button onclick="switchView('loans')" id="tab-loans" class="hide-from-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
                     <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">PRÉSTAMOS</span><span class="sm:hidden">PRÉST.</span>
                 </button>
+                <button onclick="switchView('received')" id="tab-received" class="admin-user px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
+                    <i data-lucide="check-square" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">RECIBIDOS</span><span class="sm:hidden">REC.</span>
+                </button>
                 <!-- Ocultado por solicitud de usuario -->
                 <button onclick="switchView('sales')" id="tab-sales" class="!hidden admin-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
                     <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">CONSUMIBLES</span><span class="sm:hidden">CONS.</span>
@@ -242,6 +245,33 @@
                 <div id="loans-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-3 sm:px-6 py-4 pb-20"></div>
                 <div id="empty-loans" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 w-full mt-3 mx-3 sm:mx-6 w-[calc(100%-24px)] sm:w-[calc(100%-48px)]">
                     <p class="uppercase text-xs font-bold tracking-widest">SIN PRÉSTAMOS ACTIVOS.</p>
+                </div>
+            </section>
+
+            <!-- VISTA: RECIBIDOS -->
+            <section id="view-received" class="max-w-6xl mx-auto hidden w-full px-3 sm:px-6 py-4 pb-20">
+                <div class="mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Herramientas Recibidas</h2>
+                    <div class="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                        <button onclick="changeReceivedDate(-1)" class="px-3 py-2 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                        <span id="received-date-display" class="px-4 py-2 text-xs font-black text-slate-800 uppercase min-w-[100px] text-center">HOY</span>
+                        <button onclick="changeReceivedDate(1)" class="px-3 py-2 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px] border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 font-black text-slate-400 uppercase tracking-tighter border-b border-slate-200">
+                                    <th class="p-3">FECHA Y HORA</th>
+                                    <th class="p-3">SOLICITANTE</th>
+                                    <th class="p-3">HERRAMIENTAS</th>
+                                    <th class="p-3">ENTREGÓ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="received-table-body" class="divide-y divide-slate-100 font-bold text-slate-700 uppercase"></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -744,19 +774,26 @@
         }
 
         async function fetchInitialData() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (user) {
-                const userEmail = user.email.toLowerCase().trim();
-                if (userEmail === 'tes@gmail.com') { currentUserRole = 'admin'; currentUserName = 'ADMIN'; }
-                else {
-                    const { data: ud } = await supabaseClient.from('usuarios').select('rol, nombre_completo').eq('id', user.id).single();
-                    if (ud) { currentUserRole = ud.rol; currentUserName = ud.nombre_completo || userEmail; }
-                }
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                if (pollingInterval) clearInterval(pollingInterval);
+                showLoginScreen();
+                return;
             }
+            
+            const user = session.user;
+            const userEmail = user.email.toLowerCase().trim();
+            if (userEmail === 'tes@gmail.com') { currentUserRole = 'admin'; currentUserName = 'ADMIN'; }
+            else {
+                const { data: ud } = await supabaseClient.from('usuarios').select('rol, nombre_completo').eq('id', user.id).single();
+                if (ud) { currentUserRole = ud.rol; currentUserName = ud.nombre_completo || userEmail; }
+            }
+            
             const statusEl = document.getElementById('status-user-name');
             if(statusEl) statusEl.innerText = `${currentUserName.toUpperCase()} (${currentUserRole.toUpperCase()})`;
             document.getElementById('cloud-status').classList.remove('hidden');
             
+            // MOSTRAR LA APP INMEDIATAMENTE (Antes de descargar los datos pesados)
             const loginBox = document.getElementById('login-container');
             if (!loginBox.classList.contains('hidden')) {
                 loginBox.classList.add('hidden');
@@ -766,33 +803,41 @@
                 switchView('home');
             }
 
-            const [inv, ln, art, ent, sal] = await Promise.all([
-                supabaseClient.from('inventory').select('*').order('nombre'),
-                supabaseClient.from('registro_prestamos').select('*').order('created_at', { ascending: false }),
-                supabaseClient.from('articulos_venta').select('*').order('nombre'),
-                supabaseClient.from('entradas_articulos').select('*').order('created_at', { ascending: false }),
-                supabaseClient.from('salidas_articulos').select('*').order('created_at', { ascending: false })
-            ]);
-            inventory = inv.data || [];
-            loans = (ln.data || []).map(r => ({ id: r.id, applicant: r.solicitante, deliverer: r.entregado_por, date: r.fecha, status: r.estado, tools: r.herramientas, timestamp: r.created_at }));
-            articulosVenta = art.data || [];
-            entradasVenta = ent.data || [];
-            salidasVenta = sal.data || [];
+            // DESCARGA PROGRESIVA: Cada tabla se carga de forma independiente para mostrarse al instante sin hacer cuello de botella.
             
+            supabaseClient.from('inventory').select('*').order('nombre').then(({data, error}) => {
+                if(error) return; inventory = data || []; updateStats(); renderInventory();
+            });
+
+            supabaseClient.from('registro_prestamos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
+                if(error) return; loans = (data || []).map(r => ({ id: r.id, applicant: r.solicitante, deliverer: r.entregado_por, date: r.fecha, status: r.estado, tools: r.herramientas, timestamp: r.created_at }));
+                updateStats(); updateApplicantDatalists(); renderLoans(); renderReceived();
+            });
+
+            supabaseClient.from('articulos_venta').select('*').order('nombre').then(({data, error}) => {
+                if(error) return; articulosVenta = data || []; updateStats(); renderSalesCatalog();
+            });
+
+            supabaseClient.from('entradas_articulos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
+                if(error) return; entradasVenta = data || [];
+            });
+
+            supabaseClient.from('salidas_articulos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
+                if(error) return; salidasVenta = data || []; updateApplicantDatalists(); renderReports();
+            });
+
+            supabaseClient.from('usuarios').select('*').order('nombre_completo').then(({data, error}) => {
+                if(error) return; systemUsers = data || []; updateStats(); renderUsers();
+                const filterUserEl = document.getElementById('filter-user');
+                if(filterUserEl) {
+                    const currentVal = filterUserEl.value;
+                    filterUserEl.innerHTML = '<option value="">TODOS LOS USUARIOS</option>' + systemUsers.map(u => `<option value="${(u.nombre_completo || u.email).toUpperCase()}">${(u.nombre_completo || u.email).toUpperCase()}</option>`).join('');
+                    if(currentVal) filterUserEl.value = currentVal;
+                }
+            });
+
             const supDisplay = document.getElementById('sales-out-supervisor-display');
             if(supDisplay) supDisplay.innerText = `RESPONSABLE: ${currentUserName.toUpperCase()}`;
-
-            const { data: ur } = await supabaseClient.from('usuarios').select('*').order('nombre_completo'); 
-            systemUsers = ur || []; 
-            
-            const filterUserEl = document.getElementById('filter-user');
-            if(filterUserEl) {
-                const currentVal = filterUserEl.value;
-                filterUserEl.innerHTML = '<option value="">TODOS LOS USUARIOS</option>' + systemUsers.map(u => `<option value="${(u.nombre_completo || u.email).toUpperCase()}">${(u.nombre_completo || u.email).toUpperCase()}</option>`).join('');
-                if(currentVal) filterUserEl.value = currentVal;
-            }
-            
-            updateStats(); updateApplicantDatalists(); renderInventory(); renderLoans(); renderSalesCatalog(); renderUsers(); renderReports();
         }
 
         function updateStats() {
@@ -852,20 +897,23 @@
         }
 
         function switchView(view) {
-            ['home', 'inventory', 'loans', 'sales', 'reports', 'users'].forEach(v => {
+            ['home', 'inventory', 'loans', 'sales', 'reports', 'users', 'received'].forEach(v => {
                 const el = document.getElementById(`view-${v}`); if(el) el.classList.toggle('hidden', v !== view);
                 const tab = document.getElementById(`tab-${v}`); if(tab) tab.classList.toggle('bg-slate-700', v === view);
             });
             if(view === 'reports') renderReports();
+            if(view === 'received') { receivedDateOffset = 0; renderReceived(); }
             applyRoleRestrictions();
         }
 
         function applyRoleRestrictions() {
             const isAdmin = currentUserRole === 'admin';
             const isSupervisor = currentUserRole === 'supervisor';
+            const isUsuario = currentUserRole === 'usuario';
             document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? '' : 'none');
             document.querySelectorAll('.admin-supervisor').forEach(el => el.style.display = (isAdmin || isSupervisor) ? '' : 'none');
             document.querySelectorAll('.hide-from-supervisor').forEach(el => el.style.display = isSupervisor ? 'none' : '');
+            document.querySelectorAll('.admin-user').forEach(el => el.style.display = (isAdmin || isUsuario) ? '' : 'none');
         }
 
         function renderReports() {
@@ -965,6 +1013,45 @@
                 }).join('')}</div>`;
                 container.appendChild(div);
             }
+            lucide.createIcons();
+        }
+
+        let receivedDateOffset = 0;
+        function changeReceivedDate(delta) { receivedDateOffset += delta; renderReceived(); }
+
+        function renderReceived() {
+            const tbody = document.getElementById('received-table-body');
+            if(!tbody) return;
+            
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() + receivedDateOffset);
+            const targetDateStr = targetDate.toLocaleDateString('es-ES');
+
+            const displayEl = document.getElementById('received-date-display');
+            if (displayEl) {
+                if (receivedDateOffset === 0) displayEl.innerText = 'HOY';
+                else if (receivedDateOffset === -1) displayEl.innerText = 'AYER';
+                else displayEl.innerText = targetDateStr;
+            }
+            
+            const filtered = loans.filter(l => l.status === 'devuelto' && l.date.includes(targetDateStr));
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">NO HAY HERRAMIENTAS RECIBIDAS EL ${receivedDateOffset === 0 ? 'DÍA DE HOY' : targetDateStr}.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(l => {
+                const toolsStr = l.tools.map(t => `<div class="bg-slate-50 p-1 mb-1 rounded border border-slate-100">${t.nombre} <span class="text-emerald-600 font-black tracking-widest text-[8px]">(CANT: ${t.borrowQty})</span></div>`).join('');
+                return `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3 whitespace-nowrap text-slate-500">${l.date}</td>
+                    <td class="p-3 font-black">${l.applicant}</td>
+                    <td class="p-3 text-[9px]">${toolsStr}</td>
+                    <td class="p-3">${l.deliverer}</td>
+                </tr>
+                `;
+            }).join('');
             lucide.createIcons();
         }
 
@@ -1222,7 +1309,7 @@
         function editTool(id) { const t = inventory.find(x => x.id_articulo === id); if(!t) return; currentEditingToolId = id; document.getElementById('tool-id').value = t.id_articulo; document.getElementById('tool-name').value = t.nombre; document.getElementById('tool-qty').value = t.cantidad; document.getElementById('tool-shelf').value = t.estante || ''; document.getElementById('tool-row').value = t.fila || ''; openModal('modal-tool'); }
         function editLoan(id) { const l = loans.find(x => x.id === id); if (!l) return; currentEditingLoanId = id; document.getElementById('loan-applicant').value = l.applicant; document.getElementById('loan-deliverer').value = l.deliverer; selectedToolsForLoan = JSON.parse(JSON.stringify(l.tools)); renderSelectedTools(); closeModal('modal-history'); openModal('modal-loan'); }
         function resetLoanForm() { const f = document.getElementById('form-loan'); if (f) f.reset(); selectedToolsForLoan = []; renderSelectedTools(); }
-        async function returnLoan(id) { if(!confirm('¿MARCAR DEVOLUCIÓN?')) return; const l = loans.find(x => x.id === id); if(!l) return; try { l.status = 'devuelto'; const promises = [supabaseClient.from('registro_prestamos').update({ estado: 'devuelto' }).eq('id', id)]; for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if(inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', t.id_articulo)); } } renderLoans(); renderInventory(); updateStats(); showToast('RECIBIDO'); await Promise.all(promises); fetchInitialData(); } catch (err) {} }
+        async function returnLoan(id) { const l = loans.find(x => x.id === id); if(!l) return; try { l.status = 'devuelto'; const promises = [supabaseClient.from('registro_prestamos').update({ estado: 'devuelto' }).eq('id', id)]; for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if(inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', t.id_articulo)); } } renderLoans(); renderInventory(); updateStats(); showToast('HERRAMIENTA RECIBIDA'); await Promise.all(promises); fetchInitialData(); } catch (err) {} }
         async function returnSingleTool(loanId, toolId) { const l = loans.find(x => x.id === loanId); if(!l) return; const tIndex = l.tools.findIndex(t => t.id_articulo === toolId); if(tIndex === -1) return; const t = l.tools[tIndex]; try { l.tools.splice(tIndex, 1); if (l.tools.length === 0) l.status = 'devuelto'; const inv = inventory.find(i => i.id_articulo === toolId); const promises = []; if (inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', toolId)); } if (l.tools.length === 0) { promises.push(supabaseClient.from('registro_prestamos').update({ estado: 'devuelto', herramientas: l.tools }).eq('id', loanId)); } else { promises.push(supabaseClient.from('registro_prestamos').update({ herramientas: l.tools }).eq('id', loanId)); } renderLoans(); renderInventory(); updateStats(); showToast('ARTÍCULO RECIBIDO'); await Promise.all(promises); fetchInitialData(); } catch(err) { console.error(err); } }
         function editSalesItem(id) { const i = articulosVenta.find(x => x.id === id); if(!i) return; currentEditingSalesItemId = i.id; document.getElementById('sales-item-id').value = i.id; document.getElementById('sales-item-code').value = i.id_articulo || ''; document.getElementById('sales-item-name').value = i.nombre; document.getElementById('sales-item-qty').value = i.cantidad; openModal('modal-sales-item'); }
         function editSalesInput(id) { const e = entradasVenta.find(x => x.id === id); if(!e) return; currentEditingSalesInputId = id; closeModal('modal-sales-history'); openModal('modal-sales-input'); selectSalesArticle('in', e.articulo_id); document.getElementById('sales-in-qty').value = e.cantidad; const dp = e.fecha.split('/'); if(dp.length === 3) document.getElementById('sales-in-date').value = `${dp[2]}-${dp[1]}-${dp[0]}`; }
