@@ -90,9 +90,9 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <h1 class="text-sm sm:text-base font-bold tracking-wide hidden sm:block uppercase ml-1">Entrega de Herramientas</h1>
-                    <span id="cloud-status" class="!hidden items-center gap-1 text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700 transition-colors uppercase font-black shrink-0 max-w-[130px] md:max-w-[250px]">
-                        <i data-lucide="cloud" class="w-3 h-3 shrink-0"></i> <span class="truncate text-[8px]" id="status-user-name">CONECTANDO...</span>
-                    </span>
+                    <button onclick="forceSync()" id="cloud-status" class="hidden items-center gap-1.5 text-[9px] bg-slate-800 hover:bg-slate-700 hover:text-white text-slate-300 px-2 py-1 rounded-lg border border-slate-600 transition-all uppercase font-black shrink-0 shadow-sm cursor-pointer" title="Sincronizar y Actualizar Datos">
+                        <i id="sync-icon" data-lucide="refresh-cw" class="w-3.5 h-3.5 shrink-0"></i> <span class="truncate text-[9px]" id="status-user-name">CONECTANDO...</span>
+                    </button>
                     <button onclick="toggleFullScreen()" class="text-slate-400 hover:text-blue-400 transition flex items-center justify-center p-1 rounded hover:bg-slate-800 shrink-0 ml-1" title="PANTALLA COMPLETA">
                         <i id="fs-icon" data-lucide="maximize" class="w-3.5 h-3.5"></i>
                     </button>
@@ -176,7 +176,7 @@
                 <div class="mt-6">
                     <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">ACCIONES RÁPIDAS</h4>
                     <div class="hide-from-supervisor flex flex-col sm:flex-row gap-2 sm:gap-3 mb-2 sm:mb-3">
-                        <button onclick="openModal('modal-tool')" class="admin-only flex-1 bg-blue-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-blue-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
+                        <button onclick="openModal('modal-tool')" class="admin-user flex-1 bg-blue-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-blue-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
                             <i data-lucide="plus-square" class="w-4 h-4"></i> AGREGAR HERRAMIENTA
                         </button>
                         <button onclick="openModal('modal-loan')" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
@@ -206,7 +206,7 @@
                             <button onclick="exportToExcel('herramientas')" class="admin-only flex-1 sm:flex-none bg-emerald-600 text-white px-2.5 py-1.5 rounded-md hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase">
                                 <i data-lucide="download" class="w-3.5 h-3.5"></i> EXPORTAR
                             </button>
-                            <button onclick="openModal('modal-tool')" class="admin-only flex-1 sm:flex-none bg-blue-600 text-white px-2.5 py-1.5 rounded-md hover:bg-blue-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase">
+                            <button onclick="openModal('modal-tool')" class="admin-user flex-1 sm:flex-none bg-blue-600 text-white px-2.5 py-1.5 rounded-md hover:bg-blue-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase">
                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i> AGREGAR
                             </button>
                         </div>
@@ -698,7 +698,7 @@
 
         let currentUserRole = 'usuario'; let currentUserName = ''; let systemUsers = []; let inventory = []; let loans = []; let articulosVenta = []; let salidasVenta = []; let entradasVenta = []; let selectedToolsForLoan = []; let selectedSalesOutArticles = []; 
         let currentHistoryItemId = null; let currentEditingToolId = null; let currentEditingLoanId = null; let currentEditingSalesItemId = null; let currentEditingSalesInputId = null; let currentEditingSalesOutputId = null; 
-        let currentEditingUserId = null; let itemToDelete = null; let deleteType = null; let pollingInterval = null; let useLocalFallback = false;
+        let currentEditingUserId = null; let itemToDelete = null; let deleteType = null; let useLocalFallback = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
@@ -742,7 +742,6 @@
         }
 
         async function handleLogout() {
-            if (pollingInterval) clearInterval(pollingInterval);
             await supabaseClient.auth.signOut();
             location.reload();
         }
@@ -751,10 +750,21 @@
             const btn = document.getElementById('login-btn');
             if (btn) { btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline-block"></i> CARGANDO SISTEMA...'; btn.disabled = true; lucide.createIcons(); }
             
-            fetchInitialData();
+            const cached = await loadLocalData();
+            if (cached) {
+                inventory = cached.inventory || []; loans = cached.loans || []; articulosVenta = cached.articulosVenta || []; entradasVenta = cached.entradasVenta || []; salidasVenta = cached.salidasVenta || []; systemUsers = cached.systemUsers || [];
+                updateStats(); updateApplicantDatalists(); renderInventory(); renderLoans(); renderSalesCatalog(); renderUsers(); renderReports(); renderReceived();
+                const loginBox = document.getElementById('login-container');
+                if (!loginBox.classList.contains('hidden')) {
+                    loginBox.classList.add('hidden');
+                    const app = document.getElementById('app-container');
+                    app.classList.remove('hidden');
+                    setTimeout(() => app.classList.remove('opacity-0'), 50);
+                    switchView('home');
+                }
+            }
             
-            if (pollingInterval) clearInterval(pollingInterval);
-            pollingInterval = setInterval(fetchInitialData, 30000); 
+            fetchInitialData();
         }
 
         function showLoginScreen() {
@@ -769,75 +779,80 @@
                 login.classList.remove('hidden');
                 login.classList.remove('opacity-0');
             }, 150);
-            if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
             inventory = []; loans = []; articulosVenta = []; entradasVenta = []; salidasVenta = []; systemUsers = []; selectedSalesOutArticles = []; selectedToolsForLoan = [];
         }
 
+        function forceSync() {
+            const icon = document.getElementById('sync-icon');
+            if(icon) icon.classList.add('animate-spin');
+            fetchInitialData().finally(() => {
+                const updatedIcon = document.getElementById('sync-icon');
+                if(updatedIcon) updatedIcon.classList.remove('animate-spin');
+                showToast('DATOS SINCRONIZADOS', 'success');
+            });
+        }
+
         async function fetchInitialData() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                if (pollingInterval) clearInterval(pollingInterval);
-                showLoginScreen();
-                return;
-            }
-            
-            const user = session.user;
-            const userEmail = user.email.toLowerCase().trim();
-            if (userEmail === 'tes@gmail.com') { currentUserRole = 'admin'; currentUserName = 'ADMIN'; }
-            else {
-                const { data: ud } = await supabaseClient.from('usuarios').select('rol, nombre_completo').eq('id', user.id).single();
-                if (ud) { currentUserRole = ud.rol; currentUserName = ud.nombre_completo || userEmail; }
-            }
-            
-            const statusEl = document.getElementById('status-user-name');
-            if(statusEl) statusEl.innerText = `${currentUserName.toUpperCase()} (${currentUserRole.toUpperCase()})`;
-            document.getElementById('cloud-status').classList.remove('hidden');
-            
-            // MOSTRAR LA APP INMEDIATAMENTE (Antes de descargar los datos pesados)
-            const loginBox = document.getElementById('login-container');
-            if (!loginBox.classList.contains('hidden')) {
-                loginBox.classList.add('hidden');
-                const app = document.getElementById('app-container');
-                app.classList.remove('hidden');
-                setTimeout(() => app.classList.remove('opacity-0'), 50);
-                switchView('home');
-            }
-
-            // DESCARGA PROGRESIVA: Cada tabla se carga de forma independiente para mostrarse al instante sin hacer cuello de botella.
-            
-            supabaseClient.from('inventory').select('*').order('nombre').then(({data, error}) => {
-                if(error) return; inventory = data || []; updateStats(); renderInventory();
-            });
-
-            supabaseClient.from('registro_prestamos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
-                if(error) return; loans = (data || []).map(r => ({ id: r.id, applicant: r.solicitante, deliverer: r.entregado_por, date: r.fecha, status: r.estado, tools: r.herramientas, timestamp: r.created_at }));
-                updateStats(); updateApplicantDatalists(); renderLoans(); renderReceived();
-            });
-
-            supabaseClient.from('articulos_venta').select('*').order('nombre').then(({data, error}) => {
-                if(error) return; articulosVenta = data || []; updateStats(); renderSalesCatalog();
-            });
-
-            supabaseClient.from('entradas_articulos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
-                if(error) return; entradasVenta = data || [];
-            });
-
-            supabaseClient.from('salidas_articulos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
-                if(error) return; salidasVenta = data || []; updateApplicantDatalists(); renderReports();
-            });
-
-            supabaseClient.from('usuarios').select('*').order('nombre_completo').then(({data, error}) => {
-                if(error) return; systemUsers = data || []; updateStats(); renderUsers();
-                const filterUserEl = document.getElementById('filter-user');
-                if(filterUserEl) {
-                    const currentVal = filterUserEl.value;
-                    filterUserEl.innerHTML = '<option value="">TODOS LOS USUARIOS</option>' + systemUsers.map(u => `<option value="${(u.nombre_completo || u.email).toUpperCase()}">${(u.nombre_completo || u.email).toUpperCase()}</option>`).join('');
-                    if(currentVal) filterUserEl.value = currentVal;
+            return new Promise(async (resolve) => {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) { showLoginScreen(); resolve(); return; }
+                
+                const user = session.user;
+                const userEmail = user.email.toLowerCase().trim();
+                if (userEmail === 'tes@gmail.com') { currentUserRole = 'admin'; currentUserName = 'ADMIN'; }
+                else {
+                    const { data: ud } = await supabaseClient.from('usuarios').select('rol, nombre_completo').eq('id', user.id).single();
+                    if (ud) { currentUserRole = ud.rol; currentUserName = ud.nombre_completo || userEmail; }
                 }
-            });
+                
+                const statusEl = document.getElementById('status-user-name');
+                if(statusEl) statusEl.innerText = `${currentUserName.toUpperCase()} (${currentUserRole.toUpperCase()})`;
+                document.getElementById('cloud-status').classList.remove('hidden');
+                document.getElementById('cloud-status').classList.add('flex');
+                
+                const loginBox = document.getElementById('login-container');
+                if (!loginBox.classList.contains('hidden')) {
+                    loginBox.classList.add('hidden');
+                    const app = document.getElementById('app-container');
+                    app.classList.remove('hidden');
+                    setTimeout(() => app.classList.remove('opacity-0'), 50);
+                    switchView('home');
+                }
 
-            const supDisplay = document.getElementById('sales-out-supervisor-display');
-            if(supDisplay) supDisplay.innerText = `RESPONSABLE: ${currentUserName.toUpperCase()}`;
+                let tablesLoaded = 0;
+                const checkAllLoaded = () => { tablesLoaded++; if(tablesLoaded >= 6) { saveLocalData(); resolve(); } };
+
+                supabaseClient.from('inventory').select('*').order('nombre').then(({data, error}) => {
+                    if(!error) { inventory = data || []; updateStats(); renderInventory(); } checkAllLoaded();
+                });
+                supabaseClient.from('registro_prestamos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
+                    if(!error) { loans = (data || []).map(r => ({ id: r.id, applicant: r.solicitante, deliverer: r.entregado_por, date: r.fecha, status: r.estado, tools: r.herramientas, timestamp: r.created_at })); updateStats(); updateApplicantDatalists(); renderLoans(); renderReceived(); } checkAllLoaded();
+                });
+                supabaseClient.from('articulos_venta').select('*').order('nombre').then(({data, error}) => {
+                    if(!error) { articulosVenta = data || []; updateStats(); renderSalesCatalog(); } checkAllLoaded();
+                });
+                supabaseClient.from('entradas_articulos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
+                    if(!error) { entradasVenta = data || []; } checkAllLoaded();
+                });
+                supabaseClient.from('salidas_articulos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
+                    if(!error) { salidasVenta = data || []; updateApplicantDatalists(); renderReports(); } checkAllLoaded();
+                });
+                supabaseClient.from('usuarios').select('*').order('nombre_completo').then(({data, error}) => {
+                    if(!error) { 
+                        systemUsers = data || []; updateStats(); renderUsers();
+                        const filterUserEl = document.getElementById('filter-user');
+                        if(filterUserEl) {
+                            const currentVal = filterUserEl.value;
+                            filterUserEl.innerHTML = '<option value="">TODOS LOS USUARIOS</option>' + systemUsers.map(u => `<option value="${(u.nombre_completo || u.email).toUpperCase()}">${(u.nombre_completo || u.email).toUpperCase()}</option>`).join('');
+                            if(currentVal) filterUserEl.value = currentVal;
+                        }
+                    }
+                    checkAllLoaded();
+                });
+
+                const supDisplay = document.getElementById('sales-out-supervisor-display');
+                if(supDisplay) supDisplay.innerText = `RESPONSABLE: ${currentUserName.toUpperCase()}`;
+            });
         }
 
         function updateStats() {
@@ -866,7 +881,36 @@
             }
         }
 
-        function saveLocalData() {}
+        // ==========================================
+        //  CACHE LOCAL (IndexedDB)
+        // ==========================================
+        const DB_NAME = 'ToolAppDB';
+        function initDB() {
+            return new Promise((resolve) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = (e) => { const db = e.target.result; if(!db.objectStoreNames.contains('cache')) db.createObjectStore('cache'); };
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = () => resolve(null);
+            });
+        }
+        async function saveLocalData() {
+            try {
+                const db = await initDB(); if(!db) return;
+                const tx = db.transaction('cache', 'readwrite');
+                tx.objectStore('cache').put({ inventory, loans, articulosVenta, entradasVenta, salidasVenta, systemUsers }, 'appData');
+            } catch(e) {}
+        }
+        async function loadLocalData() {
+            try {
+                const db = await initDB(); if(!db) return null;
+                return new Promise((resolve) => {
+                    const tx = db.transaction('cache', 'readonly');
+                    const req = tx.objectStore('cache').get('appData');
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => resolve(null);
+                });
+            } catch(e) { return null; }
+        }
 
         function setupYearFilter() {
             const s = document.getElementById('filter-year'); if(!s) return;
