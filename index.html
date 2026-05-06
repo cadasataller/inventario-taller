@@ -106,7 +106,6 @@
                 <button onclick="switchView('home')" id="tab-home" class="px-2 sm:px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-white uppercase tracking-wider shadow-sm">
                     <i data-lucide="home" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">INICIO</span>
                 </button>
-                <!-- Ocultado por solicitud de usuario -->
                 <button onclick="switchView('inventory')" id="tab-inventory" class="!hidden hide-from-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
                     <i data-lucide="package" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">HERRAMIENTAS</span><span class="sm:hidden">HERR.</span>
                 </button>
@@ -116,7 +115,6 @@
                 <button onclick="switchView('received')" id="tab-received" class="admin-user px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
                     <i data-lucide="check-square" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">RECIBIDOS</span><span class="sm:hidden">REC.</span>
                 </button>
-                <!-- Ocultado por solicitud de usuario -->
                 <button onclick="switchView('sales')" id="tab-sales" class="!hidden admin-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
                     <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">CONSUMIBLES</span><span class="sm:hidden">CONS.</span>
                 </button>
@@ -1306,9 +1304,19 @@
         async function saveSalesItem(id, id_articulo, nombre, cantidad, img, btn) {
             try {
                 const data = { id, nombre, cantidad }; if (id_articulo) data.id_articulo = id_articulo; if (img) data.imagen_url = img;
-                if (currentEditingSalesItemId) { await supabaseClient.from('articulos_venta').update(data).eq('id', id); } else { await supabaseClient.from('articulos_venta').insert([data]); }
-                showToast('GUARDADO EXITOSO'); closeModal('modal-sales-item'); fetchInitialData();
-            } catch (err) { console.error(err); } finally { if(btn) { btn.innerHTML = currentEditingSalesItemId ? 'GUARDAR' : 'CREAR ARTÍCULO'; btn.disabled = false; } }
+                if (currentEditingSalesItemId) { 
+                    const { error } = await supabaseClient.from('articulos_venta').update(data).eq('id', id); 
+                    if(error) throw error;
+                    const idx = articulosVenta.findIndex(x => x.id === id);
+                    if(idx !== -1) articulosVenta[idx] = { ...articulosVenta[idx], ...data };
+                } else { 
+                    const { error } = await supabaseClient.from('articulos_venta').insert([data]); 
+                    if(error) throw error;
+                    articulosVenta.push(data);
+                }
+                renderSalesCatalog(); saveLocalData();
+                showToast('GUARDADO EXITOSO'); closeModal('modal-sales-item');
+            } catch (err) { console.error(err); if(err.message?.includes('replica identity')) showToast('FALTA REPLICA IDENTITY EN DB', 'error'); else showToast('ERROR AL GUARDAR', 'error'); } finally { if(btn) { btn.innerHTML = currentEditingSalesItemId ? 'GUARDAR' : 'CREAR ARTÍCULO'; btn.disabled = false; } }
         }
 
         async function handleToolSubmit(e) {
@@ -1320,9 +1328,20 @@
         async function saveToolToInventory(id_articulo, nombre, cantidad, estante, fila, img, btn) {
             try {
                 const data = { id_articulo, nombre, cantidad, estante, fila }; if (img) data.imagen_url = img;
-                if (currentEditingToolId) { await supabaseClient.from('inventory').update(data).eq('id_articulo', id_articulo); } else { data.id = 'ID-'+Date.now(); await supabaseClient.from('inventory').insert([data]); }
-                showToast('GUARDADO EXITOSO'); closeModal('modal-tool'); fetchInitialData();
-            } catch (err) { console.error(err); } finally { if(btn) { btn.innerHTML = 'GUARDAR'; btn.disabled = false; } }
+                if (currentEditingToolId) { 
+                    const { error } = await supabaseClient.from('inventory').update(data).eq('id_articulo', currentEditingToolId); 
+                    if(error) throw error;
+                    const idx = inventory.findIndex(x => x.id_articulo === currentEditingToolId);
+                    if(idx !== -1) inventory[idx] = { ...inventory[idx], ...data };
+                } else { 
+                    data.id = 'ID-'+Date.now(); 
+                    const { error } = await supabaseClient.from('inventory').insert([data]); 
+                    if(error) throw error;
+                    inventory.push(data);
+                }
+                renderInventory(); saveLocalData();
+                showToast('GUARDADO EXITOSO'); closeModal('modal-tool');
+            } catch (err) { console.error(err); if(err.message?.includes('replica identity')) showToast('FALTA REPLICA IDENTITY EN DB', 'error'); else showToast('ERROR AL GUARDAR', 'error'); } finally { if(btn) { btn.innerHTML = 'GUARDAR'; btn.disabled = false; } }
         }
 
         async function handleUserSubmit(e) {
@@ -1344,16 +1363,16 @@
             openModal('modal-confirm');
         }
 
-        async function executeDeleteTool() { if(!itemToDelete) return; try { await supabaseClient.from('inventory').delete().eq('id_articulo', itemToDelete); showToast('ELIMINADO'); fetchInitialData(); } catch (err) {} closeModal('modal-confirm'); }
-        async function executeDeleteLoanRecord(id) { const l = loans.find(x => x.id === id); if(!l) return; try { const promises = [supabaseClient.from('registro_prestamos').delete().eq('id', id)]; if (l.status === 'activo') { for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if (inv) promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad + t.borrowQty }).eq('id_articulo', t.id_articulo)); } } await Promise.all(promises); showToast('ELIMINADO'); fetchInitialData(); } catch (err) {} closeModal('modal-confirm'); closeModal('modal-history'); }
-        async function executeDeleteSalesItem() { if(!itemToDelete) return; try { await supabaseClient.from('articulos_venta').delete().eq('id', itemToDelete); showToast('ELIMINADO'); fetchInitialData(); } catch (err) {} closeModal('modal-confirm'); }
-        async function executeDeleteSalesInput() { if(!itemToDelete) return; const entry = entradasVenta.find(e => e.id === itemToDelete); if(!entry) return; const article = articulosVenta.find(a => a.id === entry.articulo_id); try { const promises = [supabaseClient.from('entradas_articulos').delete().eq('id', itemToDelete)]; if(article) promises.push(supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad - entry.cantidad }).eq('id', article.id)); await Promise.all(promises); showToast('ELIMINADA'); fetchInitialData(); } catch (err) {} closeModal('modal-confirm'); }
-        async function executeDeleteSalesOutput() { if(!itemToDelete) return; const output = salidasVenta.find(e => e.id === itemToDelete); if(!output) return; const article = articulosVenta.find(a => a.id === output.articulo_id); try { const promises = [supabaseClient.from('salidas_articulos').delete().eq('id', itemToDelete)]; if(article) promises.push(supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad + output.cantidad }).eq('id', article.id)); await Promise.all(promises); showToast('ELIMINADA'); fetchInitialData(); } catch (err) {} closeModal('modal-confirm'); }
+        async function executeDeleteTool() { if(!itemToDelete) return; try { const {error} = await supabaseClient.from('inventory').delete().eq('id_articulo', itemToDelete); if(error) throw error; showToast('ELIMINADO'); fetchInitialData(); } catch (err) { console.error(err); if(err.message?.includes('replica identity')) showToast('FALTA REPLICA IDENTITY EN DB', 'error'); } closeModal('modal-confirm'); }
+        async function executeDeleteLoanRecord(id) { const l = loans.find(x => x.id === id); if(!l) return; try { const promises = [supabaseClient.from('registro_prestamos').delete().eq('id', id)]; if (l.status === 'activo') { for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if (inv) promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad + t.borrowQty }).eq('id_articulo', t.id_articulo)); } } await Promise.all(promises); showToast('ELIMINADO'); fetchInitialData(); } catch (err) { console.error(err); } closeModal('modal-confirm'); closeModal('modal-history'); }
+        async function executeDeleteSalesItem() { if(!itemToDelete) return; try { const {error} = await supabaseClient.from('articulos_venta').delete().eq('id', itemToDelete); if(error) throw error; showToast('ELIMINADO'); fetchInitialData(); } catch (err) { console.error(err); if(err.message?.includes('replica identity')) showToast('FALTA REPLICA IDENTITY EN DB', 'error'); } closeModal('modal-confirm'); }
+        async function executeDeleteSalesInput() { if(!itemToDelete) return; const entry = entradasVenta.find(e => e.id === itemToDelete); if(!entry) return; const article = articulosVenta.find(a => a.id === entry.articulo_id); try { const promises = [supabaseClient.from('entradas_articulos').delete().eq('id', itemToDelete)]; if(article) promises.push(supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad - entry.cantidad }).eq('id', article.id)); await Promise.all(promises); showToast('ELIMINADA'); fetchInitialData(); } catch (err) { console.error(err); } closeModal('modal-confirm'); }
+        async function executeDeleteSalesOutput() { if(!itemToDelete) return; const output = salidasVenta.find(e => e.id === itemToDelete); if(!output) return; const article = articulosVenta.find(a => a.id === output.articulo_id); try { const promises = [supabaseClient.from('salidas_articulos').delete().eq('id', itemToDelete)]; if(article) promises.push(supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad + output.cantidad }).eq('id', article.id)); await Promise.all(promises); showToast('ELIMINADA'); fetchInitialData(); } catch (err) { console.error(err); } closeModal('modal-confirm'); }
 
         function editTool(id) { const t = inventory.find(x => x.id_articulo === id); if(!t) return; currentEditingToolId = id; document.getElementById('tool-id').value = t.id_articulo; document.getElementById('tool-name').value = t.nombre; document.getElementById('tool-qty').value = t.cantidad; document.getElementById('tool-shelf').value = t.estante || ''; document.getElementById('tool-row').value = t.fila || ''; openModal('modal-tool'); }
         function editLoan(id) { const l = loans.find(x => x.id === id); if (!l) return; currentEditingLoanId = id; document.getElementById('loan-applicant').value = l.applicant; document.getElementById('loan-deliverer').value = l.deliverer; selectedToolsForLoan = JSON.parse(JSON.stringify(l.tools)); renderSelectedTools(); closeModal('modal-history'); openModal('modal-loan'); }
         function resetLoanForm() { const f = document.getElementById('form-loan'); if (f) f.reset(); selectedToolsForLoan = []; renderSelectedTools(); }
-        async function returnLoan(id) { const l = loans.find(x => x.id === id); if(!l) return; try { l.status = 'devuelto'; const promises = [supabaseClient.from('registro_prestamos').update({ estado: 'devuelto' }).eq('id', id)]; for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if(inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', t.id_articulo)); } } renderLoans(); renderInventory(); updateStats(); showToast('HERRAMIENTA RECIBIDA'); await Promise.all(promises); fetchInitialData(); } catch (err) {} }
+        async function returnLoan(id) { const l = loans.find(x => x.id === id); if(!l) return; try { l.status = 'devuelto'; const promises = [supabaseClient.from('registro_prestamos').update({ estado: 'devuelto' }).eq('id', id)]; for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if(inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', t.id_articulo)); } } renderLoans(); renderInventory(); updateStats(); showToast('HERRAMIENTA RECIBIDA'); await Promise.all(promises); fetchInitialData(); } catch (err) { console.error(err); } }
         async function returnSingleTool(loanId, toolId) { const l = loans.find(x => x.id === loanId); if(!l) return; const tIndex = l.tools.findIndex(t => t.id_articulo === toolId); if(tIndex === -1) return; const t = l.tools[tIndex]; try { l.tools.splice(tIndex, 1); if (l.tools.length === 0) l.status = 'devuelto'; const inv = inventory.find(i => i.id_articulo === toolId); const promises = []; if (inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', toolId)); } if (l.tools.length === 0) { promises.push(supabaseClient.from('registro_prestamos').update({ estado: 'devuelto', herramientas: l.tools }).eq('id', loanId)); } else { promises.push(supabaseClient.from('registro_prestamos').update({ herramientas: l.tools }).eq('id', loanId)); } renderLoans(); renderInventory(); updateStats(); showToast('ARTÍCULO RECIBIDO'); await Promise.all(promises); fetchInitialData(); } catch(err) { console.error(err); } }
         function editSalesItem(id) { const i = articulosVenta.find(x => x.id === id); if(!i) return; currentEditingSalesItemId = i.id; document.getElementById('sales-item-id').value = i.id; document.getElementById('sales-item-code').value = i.id_articulo || ''; document.getElementById('sales-item-name').value = i.nombre; document.getElementById('sales-item-qty').value = i.cantidad; openModal('modal-sales-item'); }
         function editSalesInput(id) { const e = entradasVenta.find(x => x.id === id); if(!e) return; currentEditingSalesInputId = id; closeModal('modal-sales-history'); openModal('modal-sales-input'); selectSalesArticle('in', e.articulo_id); document.getElementById('sales-in-qty').value = e.cantidad; const dp = e.fecha.split('/'); if(dp.length === 3) document.getElementById('sales-in-date').value = `${dp[2]}-${dp[1]}-${dp[0]}`; }
