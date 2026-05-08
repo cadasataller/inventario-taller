@@ -751,6 +751,9 @@
             const cached = await loadLocalData();
             if (cached) {
                 inventory = cached.inventory || []; loans = cached.loans || []; articulosVenta = cached.articulosVenta || []; entradasVenta = cached.entradasVenta || []; salidasVenta = cached.salidasVenta || []; systemUsers = cached.systemUsers || [];
+                if (cached.currentUserRole) currentUserRole = cached.currentUserRole;
+                if (cached.currentUserName) currentUserName = cached.currentUserName;
+                
                 updateStats(); updateApplicantDatalists(); renderInventory(); renderLoans(); renderSalesCatalog(); renderUsers(); renderReports(); renderReceived();
                 const loginBox = document.getElementById('login-container');
                 if (!loginBox.classList.contains('hidden')) {
@@ -807,6 +810,8 @@
                 if(statusEl) statusEl.innerText = `${currentUserName.toUpperCase()} (${currentUserRole.toUpperCase()})`;
                 document.getElementById('cloud-status').classList.remove('hidden');
                 document.getElementById('cloud-status').classList.add('flex');
+                
+                applyRoleRestrictions();
                 
                 const loginBox = document.getElementById('login-container');
                 if (!loginBox.classList.contains('hidden')) {
@@ -895,7 +900,7 @@
             try {
                 const db = await initDB(); if(!db) return;
                 const tx = db.transaction('cache', 'readwrite');
-                tx.objectStore('cache').put({ inventory, loans, articulosVenta, entradasVenta, salidasVenta, systemUsers }, 'appData');
+                tx.objectStore('cache').put({ inventory, loans, articulosVenta, entradasVenta, salidasVenta, systemUsers, currentUserRole, currentUserName }, 'appData');
             } catch(e) {}
         }
         async function loadLocalData() {
