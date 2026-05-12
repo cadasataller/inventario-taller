@@ -1043,7 +1043,7 @@
             const searchInput = document.getElementById('loans-search');
             const search = searchInput ? searchInput.value.toLowerCase() : '';
             if(!container) return; container.innerHTML = '';
-            const active = loans.filter(l => l.status === 'activo' && (!search || l.applicant.toLowerCase().includes(search) || l.deliverer.toLowerCase().includes(search)));
+            const active = loans.filter(l => l.status === 'activo' && (!search || l.applicant.toLowerCase().includes(search) || l.deliverer.toLowerCase().includes(search) || l.tools.some(t => (t.nombre || '').toLowerCase().includes(search))));
             if(active.length === 0) { emptyState.classList.remove('hidden'); return; }
             emptyState.classList.add('hidden');
 
