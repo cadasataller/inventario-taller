@@ -209,11 +209,16 @@
                             </button>
                         </div>
                     </div>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                    <div class="flex gap-2 w-full">
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                            </div>
+                            <input type="text" id="inventory-search" onkeypress="if(event.key === 'Enter') searchInventoryDB()" class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-white shadow-sm text-xs" placeholder="BUSCAR HERRAMIENTA...">
                         </div>
-                        <input type="text" id="inventory-search" oninput="renderInventory()" class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-white shadow-sm text-xs" placeholder="BUSCAR HERRAMIENTA...">
+                        <button onclick="searchInventoryDB()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition shadow-sm font-black uppercase text-xs flex items-center gap-1 shrink-0">
+                            <i data-lucide="search" class="w-3.5 h-3.5"></i> BUSCAR
+                        </button>
                     </div>
                 </div>
                 <div id="inventory-container" class="w-full px-3 sm:px-6 py-4">
@@ -283,11 +288,16 @@
                             <button onclick="openModal('modal-sales-item')" class="admin-only flex-1 sm:flex-none bg-slate-800 text-white px-2.5 py-1.5 rounded-md hover:bg-slate-900 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase"><i data-lucide="plus" class="w-3.5 h-3.5"></i> NUEVO ART.</button>
                         </div>
                     </div>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                    <div class="flex gap-2 w-full">
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                            </div>
+                            <input type="text" id="sales-search" onkeypress="if(event.key === 'Enter') searchSalesDB()" class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-white shadow-sm text-xs uppercase" placeholder="BUSCAR ARTÍCULO...">
                         </div>
-                        <input type="text" id="sales-search" oninput="renderSalesCatalog()" class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-white shadow-sm text-xs uppercase" placeholder="BUSCAR ARTÍCULO...">
+                        <button onclick="searchSalesDB()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition shadow-sm font-black uppercase text-xs flex items-center gap-1 shrink-0">
+                            <i data-lucide="search" class="w-3.5 h-3.5"></i> BUSCAR
+                        </button>
                     </div>
                 </div>
                 <div id="sales-container" class="w-full px-3 sm:px-6 py-4">
@@ -318,6 +328,9 @@
                         </select>
                         <select id="filter-year" onchange="renderReports()" class="flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
                         </select>
+                        <button id="btn-generate-report" onclick="generateReportDB()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition shadow-sm font-black uppercase text-xs flex items-center justify-center gap-1 shrink-0">
+                            <i data-lucide="play" class="w-3.5 h-3.5"></i> GENERAR REPORTE
+                        </button>
                     </div>
                 </div>
 
@@ -698,6 +711,8 @@
         let currentHistoryItemId = null; let currentEditingToolId = null; let currentEditingLoanId = null; let currentEditingSalesItemId = null; let currentEditingSalesInputId = null; let currentEditingSalesOutputId = null; 
         let currentEditingUserId = null; let itemToDelete = null; let deleteType = null; let useLocalFallback = false;
 
+        let currentInventorySearchResults = []; let currentSalesSearchResults = []; let hasSearchedInventory = false; let hasSearchedSales = false; let hasGeneratedReport = false;
+
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             setupYearFilter();
@@ -781,6 +796,7 @@
                 login.classList.remove('opacity-0');
             }, 150);
             inventory = []; loans = []; articulosVenta = []; entradasVenta = []; salidasVenta = []; systemUsers = []; selectedSalesOutArticles = []; selectedToolsForLoan = [];
+            currentInventorySearchResults = []; currentSalesSearchResults = []; hasSearchedInventory = false; hasSearchedSales = false; hasGeneratedReport = false;
         }
 
         function forceSync() {
@@ -823,23 +839,82 @@
                 }
 
                 let tablesLoaded = 0;
-                const checkAllLoaded = () => { tablesLoaded++; if(tablesLoaded >= 6) { saveLocalData(); resolve(); } };
+                const checkAllLoaded = () => { tablesLoaded++; if(tablesLoaded >= 5) { saveLocalData(); resolve(); } };
 
                 supabaseClient.from('inventory').select('*').order('nombre').then(({data, error}) => {
                     if(!error) { inventory = data || []; updateStats(); renderInventory(); } checkAllLoaded();
                 });
-                supabaseClient.from('registro_prestamos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
-                    if(!error) { loans = (data || []).map(r => ({ id: r.id, applicant: r.solicitante, deliverer: r.entregado_por, date: r.fecha, status: r.estado, tools: r.herramientas, timestamp: r.created_at })); updateStats(); updateApplicantDatalists(); renderLoans(); renderReceived(); } checkAllLoaded();
-                });
+
+                // ==============================================
+                // OPTIMIZACIÓN: Sincronización Inteligente de Préstamos
+                // ==============================================
+                let latestLoanTimestamp = null;
+                let activeLoanIds = [];
+                if (loans && loans.length > 0) {
+                    const timestamps = loans.map(l => new Date(l.timestamp).getTime()).filter(t => !isNaN(t));
+                    if (timestamps.length > 0) {
+                        latestLoanTimestamp = new Date(Math.max(...timestamps)).toISOString();
+                    }
+                    activeLoanIds = loans.filter(l => l.status === 'activo').map(l => l.id);
+                }
+
+                if (!latestLoanTimestamp) {
+                    // Primera vez o caché vacío: Descargar todo
+                    supabaseClient.from('registro_prestamos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
+                        if(!error) { loans = (data || []).map(r => ({ id: r.id, applicant: r.solicitante, deliverer: r.entregado_por, date: r.fecha, status: r.estado, tools: r.herramientas, timestamp: r.created_at })); updateStats(); updateApplicantDatalists(); renderLoans(); renderReceived(); } checkAllLoaded();
+                    });
+                } else {
+                    // Caché existente: Descargar SOLO lo nuevo y revisar si los activos cambiaron
+                    Promise.all([
+                        supabaseClient.from('registro_prestamos').select('*').gt('created_at', latestLoanTimestamp),
+                        activeLoanIds.length > 0 ? supabaseClient.from('registro_prestamos').select('*').in('id', activeLoanIds) : Promise.resolve({ data: [] })
+                    ]).then(([newLoansRes, activeLoansRes]) => {
+                        if (!newLoansRes.error && !activeLoansRes.error) {
+                            const newLoansData = newLoansRes.data || [];
+                            const activeLoansData = activeLoansRes.data || [];
+                            
+                            // Detectar eliminaciones que haya hecho otro usuario
+                            const fetchedActiveIds = activeLoansData.map(r => r.id);
+                            activeLoanIds.forEach(id => {
+                                if (!fetchedActiveIds.includes(id)) {
+                                    loans = loans.filter(l => l.id !== id);
+                                }
+                            });
+
+                            // Actualizar préstamos que fueron devueltos o editados por otro usuario
+                            activeLoansData.forEach(updatedRecord => {
+                                const idx = loans.findIndex(l => l.id === updatedRecord.id);
+                                if (idx !== -1) {
+                                    loans[idx] = { id: updatedRecord.id, applicant: updatedRecord.solicitante, deliverer: updatedRecord.entregado_por, date: updatedRecord.fecha, status: updatedRecord.estado, tools: updatedRecord.herramientas, timestamp: updatedRecord.created_at };
+                                }
+                            });
+
+                            // Añadir préstamos totalmente nuevos
+                            newLoansData.forEach(newRecord => {
+                                const exists = loans.some(l => l.id === newRecord.id);
+                                if (!exists) {
+                                    loans.unshift({ id: newRecord.id, applicant: newRecord.solicitante, deliverer: newRecord.entregado_por, date: newRecord.fecha, status: newRecord.estado, tools: newRecord.herramientas, timestamp: newRecord.created_at });
+                                }
+                            });
+
+                            // Ordenar desde el más nuevo al más antiguo
+                            loans.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                            updateStats(); updateApplicantDatalists(); renderLoans(); renderReceived();
+                        }
+                        checkAllLoaded();
+                    });
+                }
+                // ==============================================
+
                 supabaseClient.from('articulos_venta').select('*').order('nombre').then(({data, error}) => {
                     if(!error) { articulosVenta = data || []; updateStats(); renderSalesCatalog(); } checkAllLoaded();
                 });
                 supabaseClient.from('entradas_articulos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
                     if(!error) { entradasVenta = data || []; } checkAllLoaded();
                 });
-                supabaseClient.from('salidas_articulos').select('*').order('created_at', { ascending: false }).then(({data, error}) => {
-                    if(!error) { salidasVenta = data || []; updateApplicantDatalists(); renderReports(); } checkAllLoaded();
-                });
+                
+                // salidas_articulos fue removido del inicio automático para ahorrar recursos
+                
                 supabaseClient.from('usuarios').select('*').order('nombre_completo').then(({data, error}) => {
                     if(!error) { 
                         systemUsers = data || []; updateStats(); renderUsers();
@@ -963,13 +1038,43 @@
             document.querySelectorAll('.admin-user').forEach(el => el.style.display = (isAdmin || isUsuario) ? '' : 'none');
         }
 
+        async function generateReportDB() {
+            const btn = document.getElementById('btn-generate-report');
+            if(btn) { btn.innerHTML = '<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> GENERANDO...'; btn.disabled = true; lucide.createIcons(); }
+
+            try {
+                const { data, error } = await supabaseClient.from('salidas_articulos').select('*').order('created_at', { ascending: false });
+                if(error) throw error;
+                salidasVenta = data || [];
+                saveLocalData();
+                updateApplicantDatalists();
+                hasGeneratedReport = true;
+                renderReports();
+                showToast('REPORTE CARGADO', 'success');
+            } catch(err) {
+                console.error(err); showToast('ERROR DE DESCARGA', 'error');
+            } finally {
+                if(btn) { btn.innerHTML = '<i data-lucide="play" class="w-3.5 h-3.5"></i> GENERAR REPORTE'; btn.disabled = false; lucide.createIcons(); }
+            }
+        }
+
         function renderReports() {
+            const tbody = document.getElementById('reports-table-body');
+            const isAdmin = currentUserRole === 'admin';
+            if(!tbody) return;
+
+            if (!hasGeneratedReport) {
+                tbody.innerHTML = `<tr><td colspan="${isAdmin ? 6 : 5}" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">TOCA "GENERAR REPORTE" PARA DESCARGAR LOS DATOS.</td></tr>`;
+                document.getElementById('rep-stat-total').innerText = '0';
+                document.getElementById('rep-stat-units').innerText = '0';
+                document.getElementById('rep-stat-top').innerText = 'SIN DATOS';
+                return;
+            }
+
             const d = document.getElementById('filter-day') ? document.getElementById('filter-day').value : 'all';
             const m = document.getElementById('filter-month').value;
             const y = document.getElementById('filter-year').value;
             const userF = document.getElementById('filter-user') ? document.getElementById('filter-user').value.toUpperCase().trim() : '';
-            const tbody = document.getElementById('reports-table-body');
-            if(!tbody || !salidasVenta) return;
 
             const filtered = salidasVenta.filter(s => {
                 if (!s.fecha) return false;
@@ -998,8 +1103,6 @@
             const sorted = Object.entries(rank).sort((a,b) => b[1] - a[1]);
             document.getElementById('rep-stat-top').innerText = sorted.length > 0 ? sorted[0][0] : 'SIN DATOS';
 
-            const isAdmin = currentUserRole === 'admin';
-
             tbody.innerHTML = filtered.map(s => {
                 const actionTd = isAdmin ? `<td class="p-2.5 text-right w-16"><div class="flex justify-end gap-1"><button onclick="editSalesOutput('${s.id}')" class="p-1 text-slate-300 hover:text-indigo-600 transition" title="Editar"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${s.id}', 'salesOutput')" class="p-1 text-slate-300 hover:text-red-500 transition" title="Eliminar"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></td>` : '';
                 return `
@@ -1017,15 +1120,76 @@
             lucide.createIcons();
         }
 
+        async function searchInventoryDB() {
+            const q = document.getElementById('inventory-search').value.trim();
+            if (!q) { showToast('ESCRIBE ALGO PARA BUSCAR', 'error'); return; }
+            
+            hasSearchedInventory = true;
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = '<div class="col-span-full text-center p-6"><i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto text-blue-500 mb-2"></i><p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Buscando en Base de Datos...</p></div>';
+            document.getElementById('empty-inventory').classList.add('hidden');
+            lucide.createIcons();
+
+            try {
+                const { data, error } = await supabaseClient.from('inventory').select('*').ilike('nombre', `%${q}%`).order('nombre');
+                if (error) throw error;
+                currentInventorySearchResults = data || [];
+                
+                currentInventorySearchResults.forEach(newItem => {
+                    const idx = inventory.findIndex(x => x.id_articulo === newItem.id_articulo);
+                    if(idx !== -1) inventory[idx] = newItem; else inventory.push(newItem);
+                });
+                saveLocalData(); renderInventory();
+            } catch(err) {
+                console.error(err); showToast('ERROR DE BÚSQUEDA', 'error');
+                currentInventorySearchResults = []; renderInventory();
+            }
+        }
+
+        async function searchSalesDB() {
+            const q = document.getElementById('sales-search').value.trim();
+            if (!q) { showToast('ESCRIBE ALGO PARA BUSCAR', 'error'); return; }
+            
+            hasSearchedSales = true;
+            const grid = document.getElementById('sales-grid');
+            grid.innerHTML = '<div class="col-span-full text-center p-6"><i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto text-indigo-500 mb-2"></i><p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Buscando en Base de Datos...</p></div>';
+            document.getElementById('empty-sales').classList.add('hidden');
+            lucide.createIcons();
+
+            try {
+                const { data, error } = await supabaseClient.from('articulos_venta').select('*').ilike('nombre', `%${q}%`).order('nombre');
+                if (error) throw error;
+                currentSalesSearchResults = data || [];
+                
+                currentSalesSearchResults.forEach(newItem => {
+                    const idx = articulosVenta.findIndex(x => x.id === newItem.id);
+                    if(idx !== -1) articulosVenta[idx] = newItem; else articulosVenta.push(newItem);
+                });
+                saveLocalData(); renderSalesCatalog();
+            } catch(err) {
+                console.error(err); showToast('ERROR DE BÚSQUEDA', 'error');
+                currentSalesSearchResults = []; renderSalesCatalog();
+            }
+        }
+
         function renderInventory() {
             const grid = document.getElementById('inventory-grid');
-            const search = document.getElementById('inventory-search').value.toLowerCase();
+            const emptyState = document.getElementById('empty-inventory');
             if(!grid) return; grid.innerHTML = '';
-            const filtered = inventory.filter(t => (t.nombre||'').toLowerCase().includes(search) || (t.id_articulo||'').toLowerCase().includes(search));
-            if(filtered.length === 0) { document.getElementById('empty-inventory').classList.remove('hidden'); return; }
-            document.getElementById('empty-inventory').classList.add('hidden');
             
-            filtered.forEach(tool => {
+            if (!hasSearchedInventory) {
+                emptyState.innerHTML = '<p class="uppercase text-xs font-bold tracking-widest">USA EL BUSCADOR PARA CARGAR LAS HERRAMIENTAS</p>';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if(currentInventorySearchResults.length === 0) { 
+                emptyState.innerHTML = '<p class="uppercase text-xs font-bold tracking-widest">SIN RESULTADOS PARA TU BÚSQUEDA</p>';
+                emptyState.classList.remove('hidden'); return; 
+            }
+            emptyState.classList.add('hidden');
+            
+            currentInventorySearchResults.forEach(tool => {
                 const avail = tool.cantidad > 0;
                 const adminActions = currentUserRole !== 'supervisor' ? `<div class="flex gap-1 shrink-0 ml-1" onclick="event.stopPropagation()"><button onclick="editTool('${tool.id_articulo}')" class="p-1 text-slate-300 hover:text-blue-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${tool.id_articulo}', 'tool')" class="p-1 text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>` : '';
                 const card = document.createElement('div');
@@ -1104,13 +1268,22 @@
 
         function renderSalesCatalog() {
             const grid = document.getElementById('sales-grid');
-            const search = document.getElementById('sales-search').value.toLowerCase();
+            const emptyState = document.getElementById('empty-sales');
             if(!grid) return; grid.innerHTML = '';
-            const filtered = articulosVenta.filter(t => (t.nombre||'').toLowerCase().includes(search) || (t.id_articulo||'').toLowerCase().includes(search));
-            if(filtered.length === 0) { document.getElementById('empty-sales').classList.remove('hidden'); return; }
-            document.getElementById('empty-sales').classList.add('hidden');
             
-            filtered.forEach(item => {
+            if (!hasSearchedSales) {
+                emptyState.innerHTML = '<p class="uppercase text-xs font-bold tracking-widest">USA EL BUSCADOR PARA CARGAR LOS ARTÍCULOS</p>';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if(currentSalesSearchResults.length === 0) { 
+                emptyState.innerHTML = '<p class="uppercase text-xs font-bold tracking-widest">SIN RESULTADOS PARA TU BÚSQUEDA</p>';
+                emptyState.classList.remove('hidden'); return; 
+            }
+            emptyState.classList.add('hidden');
+            
+            currentSalesSearchResults.forEach(item => {
                 const adminActions = currentUserRole === 'admin' ? `<div class="flex gap-1 shrink-0 ml-1" onclick="event.stopPropagation()"><button onclick="editSalesItem('${item.id}')" class="p-1 text-slate-300 hover:text-indigo-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${item.id}', 'salesItem')" class="p-1 text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>` : '';
                 const card = document.createElement('div');
                 card.className = "tool-card bg-white rounded-xl border border-slate-200 p-1.5 flex items-center pr-2 shadow-sm cursor-pointer";
@@ -1233,6 +1406,38 @@
         function updSalesOutSel(id, d) { const s = selectedSalesOutArticles.find(x => x.id === id); const inv = articulosVenta.find(i => i.id === id); if(s && inv) { const n = s.outQty + d; if(n > 0 && n <= inv.cantidad) s.outQty = n; else if(n === 0) return removeFromSalesOutSelection(id); renderSelectedSalesOut(); document.getElementById('sales-out-search').dispatchEvent(new Event('input')); } }
 
         // ==========================================
+        //  GESTOR DE SUBIDA A STORAGE (NUEVO)
+        // ==========================================
+        async function uploadToStorage(base64Str, folder, itemName) {
+            try {
+                // Decodificar Base64 a Archivo (Blob)
+                const res = await fetch(base64Str);
+                const blob = await res.blob();
+                
+                // Generar un nombre de archivo único
+                const safeName = (itemName || 'img').replace(/[^a-z0-9]/gi, '_').toLowerCase().substring(0, 15);
+                const fileName = `${folder}/${Date.now()}_${safeName}.jpg`;
+                
+                // Subir al Storage de Supabase
+                const { data, error } = await supabaseClient.storage
+                    .from('imagenes_app')
+                    .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
+                    
+                if (error) throw error;
+                
+                // Obtener URL de visualización pública
+                const { data: urlData } = supabaseClient.storage
+                    .from('imagenes_app')
+                    .getPublicUrl(fileName);
+                    
+                return urlData.publicUrl;
+            } catch (e) {
+                console.error('Error subiendo imagen a Storage:', e);
+                return null;
+            }
+        }
+
+        // ==========================================
         //  ACCIONES CRUD OPTIMIZADAS
         // ==========================================
         async function handleLoanSubmit(e) {
@@ -1308,16 +1513,30 @@
 
         async function saveSalesItem(id, id_articulo, nombre, cantidad, img, btn) {
             try {
-                const data = { id, nombre, cantidad }; if (id_articulo) data.id_articulo = id_articulo; if (img) data.imagen_url = img;
+                const data = { id, nombre, cantidad }; if (id_articulo) data.id_articulo = id_articulo; 
+                
+                // Guardar la imagen en Storage si viene en formato Base64 de la cámara
+                if (img && img.startsWith('data:image')) {
+                    if (btn) btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> SUBIENDO IMG...';
+                    const storageUrl = await uploadToStorage(img, 'consumibles', nombre);
+                    if (storageUrl) data.imagen_url = storageUrl;
+                } else if (img) {
+                    data.imagen_url = img; // Ya es una URL alojada
+                }
+
                 if (currentEditingSalesItemId) { 
                     const { error } = await supabaseClient.from('articulos_venta').update(data).eq('id', id); 
                     if(error) throw error;
                     const idx = articulosVenta.findIndex(x => x.id === id);
                     if(idx !== -1) articulosVenta[idx] = { ...articulosVenta[idx], ...data };
+                    
+                    const sIdx = currentSalesSearchResults.findIndex(x => x.id === id);
+                    if(sIdx !== -1) currentSalesSearchResults[sIdx] = { ...currentSalesSearchResults[sIdx], ...data };
                 } else { 
                     const { error } = await supabaseClient.from('articulos_venta').insert([data]); 
                     if(error) throw error;
                     articulosVenta.push(data);
+                    currentSalesSearchResults.unshift(data); hasSearchedSales = true;
                 }
                 renderSalesCatalog(); saveLocalData();
                 showToast('GUARDADO EXITOSO'); closeModal('modal-sales-item');
@@ -1332,17 +1551,31 @@
 
         async function saveToolToInventory(id_articulo, nombre, cantidad, estante, fila, img, btn) {
             try {
-                const data = { id_articulo, nombre, cantidad, estante, fila }; if (img) data.imagen_url = img;
+                const data = { id_articulo, nombre, cantidad, estante, fila };
+                
+                // Guardar la imagen en Storage si viene en formato Base64 de la cámara
+                if (img && img.startsWith('data:image')) {
+                    if (btn) btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> SUBIENDO IMG...';
+                    const storageUrl = await uploadToStorage(img, 'herramientas', nombre);
+                    if (storageUrl) data.imagen_url = storageUrl;
+                } else if (img) {
+                    data.imagen_url = img; // Ya es una URL alojada
+                }
+
                 if (currentEditingToolId) { 
                     const { error } = await supabaseClient.from('inventory').update(data).eq('id_articulo', currentEditingToolId); 
                     if(error) throw error;
                     const idx = inventory.findIndex(x => x.id_articulo === currentEditingToolId);
                     if(idx !== -1) inventory[idx] = { ...inventory[idx], ...data };
+                    
+                    const sIdx = currentInventorySearchResults.findIndex(x => x.id_articulo === currentEditingToolId);
+                    if(sIdx !== -1) currentInventorySearchResults[sIdx] = { ...currentInventorySearchResults[sIdx], ...data };
                 } else { 
                     data.id = 'ID-'+Date.now(); 
                     const { error } = await supabaseClient.from('inventory').insert([data]); 
                     if(error) throw error;
                     inventory.push(data);
+                    currentInventorySearchResults.unshift(data); hasSearchedInventory = true;
                 }
                 renderInventory(); saveLocalData();
                 showToast('GUARDADO EXITOSO'); closeModal('modal-tool');
@@ -1368,9 +1601,9 @@
             openModal('modal-confirm');
         }
 
-        async function executeDeleteTool() { if(!itemToDelete) return; try { const {error} = await supabaseClient.from('inventory').delete().eq('id_articulo', itemToDelete); if(error) throw error; showToast('ELIMINADO'); fetchInitialData(); } catch (err) { console.error(err); if(err.message?.includes('replica identity')) showToast('FALTA REPLICA IDENTITY EN DB', 'error'); } closeModal('modal-confirm'); }
+        async function executeDeleteTool() { if(!itemToDelete) return; try { const {error} = await supabaseClient.from('inventory').delete().eq('id_articulo', itemToDelete); if(error) throw error; inventory = inventory.filter(x => x.id_articulo !== itemToDelete); currentInventorySearchResults = currentInventorySearchResults.filter(x => x.id_articulo !== itemToDelete); showToast('ELIMINADO'); renderInventory(); saveLocalData(); fetchInitialData(); } catch (err) { console.error(err); if(err.message?.includes('replica identity')) showToast('FALTA REPLICA IDENTITY EN DB', 'error'); } closeModal('modal-confirm'); }
         async function executeDeleteLoanRecord(id) { const l = loans.find(x => x.id === id); if(!l) return; try { const promises = [supabaseClient.from('registro_prestamos').delete().eq('id', id)]; if (l.status === 'activo') { for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if (inv) promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad + t.borrowQty }).eq('id_articulo', t.id_articulo)); } } await Promise.all(promises); showToast('ELIMINADO'); fetchInitialData(); } catch (err) { console.error(err); } closeModal('modal-confirm'); closeModal('modal-history'); }
-        async function executeDeleteSalesItem() { if(!itemToDelete) return; try { const {error} = await supabaseClient.from('articulos_venta').delete().eq('id', itemToDelete); if(error) throw error; showToast('ELIMINADO'); fetchInitialData(); } catch (err) { console.error(err); if(err.message?.includes('replica identity')) showToast('FALTA REPLICA IDENTITY EN DB', 'error'); } closeModal('modal-confirm'); }
+        async function executeDeleteSalesItem() { if(!itemToDelete) return; try { const {error} = await supabaseClient.from('articulos_venta').delete().eq('id', itemToDelete); if(error) throw error; articulosVenta = articulosVenta.filter(x => x.id !== itemToDelete); currentSalesSearchResults = currentSalesSearchResults.filter(x => x.id !== itemToDelete); showToast('ELIMINADO'); renderSalesCatalog(); saveLocalData(); fetchInitialData(); } catch (err) { console.error(err); if(err.message?.includes('replica identity')) showToast('FALTA REPLICA IDENTITY EN DB', 'error'); } closeModal('modal-confirm'); }
         async function executeDeleteSalesInput() { if(!itemToDelete) return; const entry = entradasVenta.find(e => e.id === itemToDelete); if(!entry) return; const article = articulosVenta.find(a => a.id === entry.articulo_id); try { const promises = [supabaseClient.from('entradas_articulos').delete().eq('id', itemToDelete)]; if(article) promises.push(supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad - entry.cantidad }).eq('id', article.id)); await Promise.all(promises); showToast('ELIMINADA'); fetchInitialData(); } catch (err) { console.error(err); } closeModal('modal-confirm'); }
         async function executeDeleteSalesOutput() { if(!itemToDelete) return; const output = salidasVenta.find(e => e.id === itemToDelete); if(!output) return; const article = articulosVenta.find(a => a.id === output.articulo_id); try { const promises = [supabaseClient.from('salidas_articulos').delete().eq('id', itemToDelete)]; if(article) promises.push(supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad + output.cantidad }).eq('id', article.id)); await Promise.all(promises); showToast('ELIMINADA'); fetchInitialData(); } catch (err) { console.error(err); } closeModal('modal-confirm'); }
 
@@ -1414,11 +1647,22 @@
             if (currentUserRole === 'admin') switchHistoryTab('in'); else switchHistoryTab('out');
             
             const inC = document.getElementById('sales-history-in-content'); const outC = document.getElementById('sales-history-out-content'); inC.innerHTML = ''; outC.innerHTML = '';
-            const rIn = entradasVenta.filter(e => e.articulo_id === itemId); const rOut = salidasVenta.filter(s => s.articulo_id === itemId);
+            
+            // Entradas se filtran de la memoria porque se cargan al inicio
+            const rIn = entradasVenta.filter(e => e.articulo_id === itemId); 
             if(rIn.length===0) inC.innerHTML = '<p class="text-[9px] text-slate-400 font-bold text-center">VACÍO</p>';
             else rIn.forEach(m => { const ac = currentUserRole === 'admin' ? `<div class="flex gap-1 pl-1.5"><button onclick="editSalesInput('${m.id}')"><i data-lucide="pencil" class="w-3 h-3 text-indigo-400 hover:text-indigo-600"></i></button><button onclick="confirmDeletion('${m.id}', 'salesInput')"><i data-lucide="trash-2" class="w-3 h-3 text-indigo-400 hover:text-red-500"></i></button></div>` : ''; inC.innerHTML += `<div class="p-2 border border-indigo-100 bg-indigo-50/30 rounded mb-1.5"><div class="flex justify-between items-center"><span class="text-[8px] font-black text-indigo-600">ENTRADA</span><div class="flex items-center gap-1"><span class="text-[8px] text-slate-400">${m.fecha}</span>${ac}</div></div><p class="text-sm font-black">+${m.cantidad}</p></div>`; });
-            if(rOut.length===0) outC.innerHTML = '<p class="text-[9px] text-slate-400 font-bold text-center">VACÍO</p>';
-            else rOut.forEach(m => { const ac = currentUserRole === 'admin' ? `<div class="flex gap-1 pl-1.5"><button onclick="editSalesOutput('${m.id}')"><i data-lucide="pencil" class="w-3 h-3 text-orange-400 hover:text-orange-600"></i></button><button onclick="confirmDeletion('${m.id}', 'salesOutput')"><i data-lucide="trash-2" class="w-3 h-3 text-orange-400 hover:text-red-500"></i></button></div>` : ''; outC.innerHTML += `<div class="p-2 border border-orange-100 bg-orange-50/30 rounded mb-1.5"><div class="flex justify-between items-center"><span class="text-[8px] font-black text-orange-600">SALIDA</span><div class="flex items-center gap-1"><span class="text-[8px] text-slate-400">${m.fecha}</span>${ac}</div></div><p class="text-sm font-black">-${m.cantidad}</p><p class="text-[7px] text-slate-500 mt-1 uppercase">USO: ${m.para_uso_en||'N/A'} | RECIBE: ${m.recibe}</p></div>`; });
+            
+            // Salidas se consultan dinámicamente a Supabase (Más ligero y preciso)
+            outC.innerHTML = '<p class="text-[9px] text-slate-400 font-bold text-center flex items-center justify-center gap-1"><i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> CARGANDO...</p>';
+            supabaseClient.from('salidas_articulos').select('*').eq('articulo_id', itemId).order('created_at', { ascending: false }).then(({data}) => {
+                outC.innerHTML = '';
+                const rOut = data || [];
+                if(rOut.length===0) outC.innerHTML = '<p class="text-[9px] text-slate-400 font-bold text-center">VACÍO</p>';
+                else rOut.forEach(m => { const ac = currentUserRole === 'admin' ? `<div class="flex gap-1 pl-1.5"><button onclick="editSalesOutput('${m.id}')"><i data-lucide="pencil" class="w-3 h-3 text-orange-400 hover:text-orange-600"></i></button><button onclick="confirmDeletion('${m.id}', 'salesOutput')"><i data-lucide="trash-2" class="w-3 h-3 text-orange-400 hover:text-red-500"></i></button></div>` : ''; outC.innerHTML += `<div class="p-2 border border-orange-100 bg-orange-50/30 rounded mb-1.5"><div class="flex justify-between items-center"><span class="text-[8px] font-black text-orange-600">SALIDA</span><div class="flex items-center gap-1"><span class="text-[8px] text-slate-400">${m.fecha}</span>${ac}</div></div><p class="text-sm font-black">-${m.cantidad}</p><p class="text-[7px] text-slate-500 mt-1 uppercase">USO: ${m.para_uso_en||'N/A'} | RECIBE: ${m.recibe}</p></div>`; });
+                lucide.createIcons();
+            });
+
             lucide.createIcons();
             
             const btnIn = document.getElementById('btn-quick-in-hidden'); const btnOut = document.getElementById('btn-quick-out-hidden');
@@ -1441,11 +1685,16 @@
             if (data.length > 0) { const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, sn); XLSX.writeFile(wb, fn); showToast('EXPORTADO'); }
         }
 
-        function exportItemHistory(type) {
+        async function exportItemHistory(type) {
             if (!currentHistoryItemId) return; const a = articulosVenta.find(x => x.id === currentHistoryItemId); if (!a) return;
             let data = []; let fn = ''; let sn = ''; const safeName = a.nombre.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            if (type === 'in') { const inputs = entradasVenta.filter(e => e.articulo_id === currentHistoryItemId); if (inputs.length === 0) return; data = inputs.map(i => ({ 'FECHA': i.fecha, 'CANT': i.cantidad })); fn = `Ent_${safeName}.xlsx`; sn = 'Entradas'; }
-            else if (type === 'out') { const outputs = salidasVenta.filter(s => s.articulo_id === currentHistoryItemId); if (outputs.length === 0) return; data = outputs.map(i => ({ 'FECHA': i.fecha, 'CANT': i.cantidad, 'SUPERV': i.supervisor, 'RECIBE': i.recibe, 'USO': i.para_uso_en })); fn = `Sal_${safeName}.xlsx`; sn = 'Salidas'; }
+            if (type === 'in') { 
+                const inputs = entradasVenta.filter(e => e.articulo_id === currentHistoryItemId); if (inputs.length === 0) return; data = inputs.map(i => ({ 'FECHA': i.fecha, 'CANT': i.cantidad })); fn = `Ent_${safeName}.xlsx`; sn = 'Entradas'; 
+            }
+            else if (type === 'out') { 
+                const { data: outputs } = await supabaseClient.from('salidas_articulos').select('*').eq('articulo_id', currentHistoryItemId).order('created_at', { ascending: false });
+                if (!outputs || outputs.length === 0) return; data = outputs.map(i => ({ 'FECHA': i.fecha, 'CANT': i.cantidad, 'SUPERV': i.supervisor, 'RECIBE': i.recibe, 'USO': i.para_uso_en })); fn = `Sal_${safeName}.xlsx`; sn = 'Salidas'; 
+            }
             if (data.length > 0) { const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, sn); XLSX.writeFile(wb, fn); showToast('EXPORTADO'); }
         }
 
