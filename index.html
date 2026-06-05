@@ -1,21 +1,20 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entrega de Herramientas</title>
-    
-    <!-- Íconos para Acceso Directo (PWA / Pantalla de Inicio) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%230f172a'/%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%230f172a'/%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <meta name="apple-mobile-web-app-title" content="Herramientas">
-    <meta name="theme-color" content="#0f172a">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Entrega de Herramientas</title>
+<!-- Íconos para Acceso Directo (PWA / Pantalla de Inicio) -->
+<link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%230f172a'/%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
+<link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%230f172a'/%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" rel="apple-touch-icon"/>
+<meta content="Herramientas" name="apple-mobile-web-app-title"/>
+<meta content="#0f172a" name="theme-color"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
@@ -39,670 +38,1170 @@
             100% { opacity: 1; transform: scale(1); }
         }
         .animate-alert { animation: pulse-red 1.5s infinite ease-in-out; }
+
+
+        /* ==========================================================
+           REDISEÑO UNIFICADO - MENOS MENÚS, UNA SOLA VISTA OPERATIVA
+           Mantiene IDs, eventos onclick y funciones existentes.
+        ========================================================== */
+        body {
+            background: linear-gradient(135deg, #eef4ff 0%, #f8fafc 42%, #f1f5f9 100%);
+        }
+        #app-container {
+            background: transparent;
+        }
+        .app-topbar {
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18);
+        }
+        .brand-mark {
+            background: linear-gradient(135deg, #2563eb, #0f172a);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 30px rgba(37, 99, 235, .25);
+        }
+        .nav-pill {
+            border: 1px solid rgba(148, 163, 184, .18);
+            background: rgba(30, 41, 59, .55);
+            color: #cbd5e1;
+            transition: all .18s ease;
+        }
+        .nav-pill:hover {
+            background: rgba(51, 65, 85, .92);
+            color: #fff;
+        }
+        .nav-pill.bg-slate-700,
+        .nav-pill.nav-active {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-color: rgba(255,255,255,.75);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, .18);
+        }
+
+        /* Botón Menú fijo en la parte inferior */
+        .app-bottom-menu {
+            position: fixed;
+            left: 50%;
+            bottom: calc(.85rem + env(safe-area-inset-bottom));
+            transform: translateX(-50%);
+            z-index: 45;
+            width: min(360px, calc(100% - 1.5rem));
+            border-radius: 1.15rem;
+            background: rgba(15, 23, 42, .94);
+            border: 1px solid rgba(255,255,255,.10);
+            box-shadow: 0 18px 46px rgba(15,23,42,.30);
+            padding: .45rem;
+        }
+        .app-bottom-menu .nav-pill {
+            flex: 1;
+            justify-content: center;
+            padding: .70rem .45rem !important;
+            font-size: 9px !important;
+        }
+        #main-content {
+            padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+        }
+        body.keyboard-active .app-bottom-menu {
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, 110%);
+        }
+        #main-content {
+            background: transparent !important;
+            scroll-behavior: smooth;
+        }
+        #view-home,
+        #view-inventory,
+        #view-loans,
+        #view-received,
+        #view-sales,
+        #view-reports,
+        #view-users {
+            max-width: 1280px !important;
+        }
+        .operation-mode #view-home {
+            padding-bottom: .35rem !important;
+        }
+        .operation-mode #view-inventory,
+        .operation-mode #view-loans,
+        .operation-mode #view-received,
+        .operation-mode #view-sales {
+            padding-left: .75rem !important;
+            padding-right: .75rem !important;
+            padding-top: .65rem !important;
+            padding-bottom: .65rem !important;
+        }
+        @media (min-width: 640px) {
+            .operation-mode #view-inventory,
+            .operation-mode #view-loans,
+            .operation-mode #view-received,
+            .operation-mode #view-sales {
+                padding-left: 1.5rem !important;
+                padding-right: 1.5rem !important;
+            }
+        }
+        .operation-mode #view-inventory > .sticky,
+        .operation-mode #view-loans > .sticky,
+        .operation-mode #view-sales > .sticky {
+            position: static !important;
+            top: auto !important;
+            z-index: auto !important;
+            background: rgba(255,255,255,.92) !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 1.25rem !important;
+            box-shadow: 0 10px 34px rgba(15, 23, 42, .08) !important;
+            margin-bottom: .75rem !important;
+        }
+        .operation-mode #view-received > .mb-5 {
+            background: rgba(255,255,255,.92);
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            box-shadow: 0 10px 34px rgba(15, 23, 42, .08);
+            padding: .85rem;
+            margin-bottom: .75rem !important;
+        }
+        .operation-mode #inventory-container,
+        .operation-mode #sales-container,
+        .operation-mode #loans-list-container {
+            background: rgba(255,255,255,.72);
+            border: 1px solid rgba(226,232,240,.95);
+            border-radius: 1.25rem;
+            box-shadow: 0 14px 40px rgba(15, 23, 42, .07);
+        }
+        .operation-mode #inventory-container,
+        .operation-mode #sales-container {
+            padding: .85rem !important;
+        }
+        .operation-mode #loans-list-container {
+            padding: .85rem !important;
+            padding-bottom: .85rem !important;
+        }
+        .operation-mode #view-received .bg-white.rounded-xl,
+        #view-reports .bg-white.rounded-xl,
+        #view-users .bg-white.rounded-2xl {
+            box-shadow: 0 14px 40px rgba(15, 23, 42, .08) !important;
+        }
+        .unified-hero {
+            background: radial-gradient(circle at top left, rgba(59,130,246,.20), transparent 35%), linear-gradient(135deg, #0f172a, #1e3a8a 54%, #0f172a);
+            border: 1px solid rgba(255,255,255,.12);
+            box-shadow: 0 22px 60px rgba(15,23,42,.24);
+        }
+        .summary-card {
+            box-shadow: 0 12px 34px rgba(15, 23, 42, .07);
+            transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+        }
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 44px rgba(15, 23, 42, .10);
+        }
+        .compact-actions {
+            background: rgba(255,255,255,.92);
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
+            box-shadow: 0 12px 34px rgba(15,23,42,.07);
+        }
+        .section-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #dbeafe;
+            padding: .28rem .6rem;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        /* Cards con acciones ocultas hasta abrir detalles */
+        .menu-detail-card {
+            box-shadow: 0 12px 34px rgba(15, 23, 42, .07);
+            transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+        }
+        .menu-detail-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 44px rgba(15, 23, 42, .10);
+        }
+        .menu-detail-card > summary {
+            list-style: none;
+            cursor: pointer;
+        }
+        .menu-detail-card > summary::-webkit-details-marker {
+            display: none;
+        }
+        .menu-detail-card .details-chevron {
+            transition: transform .18s ease;
+        }
+        .menu-detail-card[open] .details-chevron {
+            transform: rotate(180deg);
+        }
+        .menu-detail-actions {
+            animation: fadeIn .15s ease-out;
+        }
+
+
+        /* Menú por cards: la card abre una vista de opciones */
+        .menu-launch-card {
+            box-shadow: 0 12px 34px rgba(15, 23, 42, .07);
+            transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+        }
+        .menu-launch-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 44px rgba(15, 23, 42, .10);
+        }
+        .menu-launch-card:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, .35);
+            outline-offset: 3px;
+        }
+        .menu-option-window {
+            animation: fadeIn .15s ease-out;
+        }
+        .menu-action-tile {
+            min-height: 92px;
+        }
+
+        @media (max-width: 768px) {
+            .app-topbar {
+                padding: .65rem .75rem !important;
+            }
+            .app-topbar .desktop-title {
+                display: none;
+            }
+            .app-bottom-menu {
+                left: .75rem;
+                right: .75rem;
+                bottom: calc(.75rem + env(safe-area-inset-bottom));
+                width: auto;
+                transform: none;
+                z-index: 45;
+            }
+            .app-bottom-menu .nav-pill {
+                flex: 1;
+                justify-content: center;
+                padding: .65rem .35rem !important;
+                font-size: 9px !important;
+            }
+            #main-content {
+                padding-bottom: 5.5rem;
+            }
+        }
+
+
+        /* ==========================================================
+           AJUSTE: BOTONES VOLVER + FORMULARIOS COMPACTOS CON TECLADO
+        ========================================================== */
+        :root { --app-vh: 100vh; }
+        .view-return-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: .75rem;
+        }
+        .view-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            padding: .48rem .75rem;
+            border-radius: .85rem;
+            font-size: 10px;
+            line-height: 1;
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            box-shadow: 0 8px 22px rgba(15, 23, 42, .07);
+            transition: all .16s ease;
+        }
+        .view-back-btn:hover {
+            border-color: #94a3b8;
+            background: #f8fafc;
+            color: #0f172a;
+            transform: translateY(-1px);
+        }
+        .view-back-btn i { width: 14px; height: 14px; }
+        .form-compact-note {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        @media (max-width: 640px) {
+            html, body, #app-container { height: var(--app-vh) !important; }
+            #main-content {
+                min-height: 0 !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+                padding-bottom: calc(5.75rem + env(safe-area-inset-bottom)) !important;
+            }
+            body.keyboard-active .app-bottom-menu {
+                opacity: 0;
+                pointer-events: none;
+                transform: translateY(110%);
+            }
+            body.keyboard-active #main-content {
+                padding-bottom: .75rem !important;
+            }
+            body.keyboard-active .app-topbar {
+                padding-top: .45rem !important;
+                padding-bottom: .45rem !important;
+            }
+            body.keyboard-active .app-topbar .brand-mark,
+            body.keyboard-active .app-topbar .desktop-title,
+            body.keyboard-active .app-topbar h1 {
+                display: none !important;
+            }
+            .view-return-row { margin-bottom: .5rem; }
+            .view-back-btn {
+                width: 100%;
+                justify-content: center;
+                padding: .62rem .75rem;
+                border-radius: .95rem;
+            }
+
+            /* Modales/formularios listos para teclado móvil */
+            div[id^="modal-"] {
+                align-items: flex-start !important;
+                justify-content: center !important;
+                padding: .5rem !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            div[id^="modal-"] > div {
+                width: 100% !important;
+                height: auto !important;
+                max-height: calc(var(--app-vh) - 1rem) !important;
+                border-radius: 1rem !important;
+            }
+            body.keyboard-active div[id^="modal-"] {
+                padding: .35rem !important;
+            }
+            body.keyboard-active div[id^="modal-"] > div {
+                max-height: calc(var(--app-vh) - .7rem) !important;
+            }
+            div[id^="modal-"] form,
+            div[id^="modal-"] .overflow-y-auto {
+                min-height: 0 !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            div[id^="modal-"] form {
+                padding: .65rem !important;
+            }
+            div[id^="modal-"] .p-3,
+            div[id^="modal-"] .p-4,
+            div[id^="modal-"] .sm\:p-4 {
+                padding: .65rem !important;
+            }
+            div[id^="modal-"] label {
+                font-size: 9px !important;
+                margin-bottom: .2rem !important;
+            }
+            div[id^="modal-"] input,
+            div[id^="modal-"] select,
+            div[id^="modal-"] textarea {
+                font-size: 12px !important;
+                padding-top: .42rem !important;
+                padding-bottom: .42rem !important;
+                scroll-margin-top: 5rem;
+                scroll-margin-bottom: 9rem;
+            }
+            div[id^="modal-"] textarea {
+                min-height: 2.4rem !important;
+            }
+            div[id^="modal-"] .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+                margin-top: .55rem !important;
+            }
+            div[id^="modal-"] .pb-20 {
+                padding-bottom: .7rem !important;
+            }
+            div[id^="modal-"] .mt-4,
+            div[id^="modal-"] .mt-5 {
+                margin-top: .55rem !important;
+            }
+            div[id^="modal-"] .pt-3 {
+                padding-top: .55rem !important;
+            }
+            div[id^="modal-"] h3 {
+                font-size: .86rem !important;
+                line-height: 1.1 !important;
+            }
+            div[id^="modal-"] button[type="submit"],
+            div[id^="modal-"] button[type="button"] {
+                min-height: 32px;
+            }
+            body.keyboard-active div[id^="modal-"] .rounded-t-xl {
+                border-radius: .85rem .85rem 0 0 !important;
+            }
+            body.keyboard-active div[id^="modal-"] .shadow-xl,
+            body.keyboard-active div[id^="modal-"] .shadow-2xl {
+                box-shadow: 0 10px 28px rgba(15,23,42,.18) !important;
+            }
+        }
+
+
+        /* Ajuste solicitado: quitar el botón MENÚ visible y dejar el área superior limpia */
+        .app-bottom-menu {
+            display: none !important;
+        }
+        #main-content {
+            padding-bottom: .75rem !important;
+        }
+
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans h-screen flex flex-col overflow-hidden text-sm">
-
-    <!-- ============================================== -->
-    <!-- PANTALLA DE LOGIN                              -->
-    <!-- ============================================== -->
-    <div id="login-container" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4 transition-opacity duration-300">
-        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm flex flex-col items-center border border-slate-700/50">
-            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 gap-1 shadow-inner">
-                <i data-lucide="hammer" class="w-6 h-6"></i>
-            </div>
-            <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-1 text-center">Entrega de Herramientas</h2>
-            <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-5">Acceso Restringido</p>
-            
-            <form id="form-login" onsubmit="handleLogin(event)" class="w-full space-y-3">
-                <div>
-                    <label class="block text-[9px] font-black text-slate-400 mb-1 uppercase tracking-widest">Correo Electrónico</label>
-                    <input type="email" id="login-email" required class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 text-xs lowercase" placeholder="usuario@empresa.com">
-                </div>
-                <div>
-                    <label class="block text-[9px] font-black text-slate-400 mb-1 uppercase tracking-widest">Contraseña</label>
-                    <div class="relative">
-                        <input type="password" id="login-pass" required class="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 text-xs" placeholder="••••••••">
-                        <button type="button" onclick="togglePasswordVisibility('login-pass', 'login-eye-icon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 transition" tabindex="-1">
-                            <i id="login-eye-icon" data-lucide="eye" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-                <p id="login-error" class="text-[10px] text-red-600 font-bold text-center uppercase hidden"></p>
-                <button type="submit" id="login-btn" class="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-lg hover:bg-blue-700 transition flex justify-center items-center gap-1.5 mt-2">
+<!-- ============================================== -->
+<!-- PANTALLA DE LOGIN                              -->
+<!-- ============================================== -->
+<div class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4 transition-opacity duration-300" id="login-container">
+<div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm flex flex-col items-center border border-slate-700/50">
+<div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 gap-1 shadow-inner">
+<i class="w-6 h-6" data-lucide="hammer"></i>
+</div>
+<h2 class="text-xl font-black text-slate-800 uppercase tracking-tight mb-1 text-center">Entrega de Herramientas</h2>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-5">Acceso Restringido</p>
+<form class="w-full space-y-3" id="form-login" onsubmit="handleLogin(event)">
+<div>
+<label class="block text-[9px] font-black text-slate-400 mb-1 uppercase tracking-widest">Correo Electrónico</label>
+<input class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 text-xs lowercase" id="login-email" placeholder="usuario@empresa.com" required="" type="email"/>
+</div>
+<div>
+<label class="block text-[9px] font-black text-slate-400 mb-1 uppercase tracking-widest">Contraseña</label>
+<div class="relative">
+<input class="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 text-xs" id="login-pass" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 transition" onclick="togglePasswordVisibility('login-pass', 'login-eye-icon')" tabindex="-1" type="button">
+<i class="w-4 h-4" data-lucide="eye" id="login-eye-icon"></i>
+</button>
+</div>
+</div>
+<p class="text-[10px] text-red-600 font-bold text-center uppercase hidden" id="login-error"></p>
+<button class="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-black uppercase tracking-widest shadow-lg hover:bg-blue-700 transition flex justify-center items-center gap-1.5 mt-2" id="login-btn" type="submit">
                     INICIAR SESIÓN
                 </button>
-            </form>
-        </div>
-    </div>
+</form>
+</div>
+</div>
+<!-- ============================================== -->
+<!-- CONTENEDOR PRINCIPAL                           -->
+<!-- ============================================== -->
+<div class="flex-1 flex flex-col h-full hidden opacity-0 transition-opacity duration-300" id="app-container">
+<!-- BARRA SUPERIOR UNIFICADA -->
+<nav class="app-topbar text-white px-3 sm:px-5 py-3 flex justify-between items-center z-30 sticky top-0 gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="brand-mark w-10 h-10 rounded-2xl flex items-center justify-center text-white shrink-0">
+<i class="w-5 h-5" data-lucide="hammer"></i>
+</div>
+<div class="min-w-0">
+<h1 class="desktop-title text-sm sm:text-base font-black tracking-tight uppercase truncate">Entrega de Herramientas</h1>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="text-[9px] font-black uppercase tracking-widest text-blue-200">Vista Menú</span>
+<button class="hidden items-center gap-1 text-[9px] bg-white/10 hover:bg-white/15 text-slate-200 px-2 py-0.5 rounded-full border border-white/10 transition-all uppercase font-black shrink-0 cursor-pointer" id="cloud-status" onclick="forceSync()" title="Sincronizar y Actualizar Datos">
+<i class="w-3 h-3 shrink-0" data-lucide="refresh-cw" id="sync-icon"></i>
+<span class="truncate max-w-[120px]" id="status-user-name">CONECTANDO...</span>
+</button>
+</div>
+</div>
+</div>
+<div class="hidden sm:flex items-center gap-2">
+<button class="text-slate-300 hover:text-white transition flex items-center justify-center p-2 rounded-xl hover:bg-white/10 shrink-0" onclick="toggleFullScreen()" title="PANTALLA COMPLETA">
+<i class="w-4 h-4" data-lucide="maximize" id="fs-icon"></i>
+</button>
+<button class="text-slate-300 hover:text-red-300 transition flex items-center justify-center p-2 rounded-xl hover:bg-white/10 shrink-0" onclick="handleLogout()" title="CERRAR SESIÓN">
+<i class="w-4 h-4" data-lucide="log-out"></i>
+</button>
+</div>
+<div class="sm:hidden flex items-center gap-1.5">
+<button class="text-slate-300 hover:text-white transition flex items-center justify-center p-2 rounded-xl hover:bg-white/10 shrink-0" onclick="toggleFullScreen()" title="PANTALLA COMPLETA">
+<i class="w-4 h-4" data-lucide="maximize" id="fs-icon-mobile"></i>
+</button>
+<button class="text-slate-300 hover:text-red-300 transition flex items-center justify-center p-2 rounded-xl hover:bg-white/10 shrink-0" onclick="handleLogout()" title="CERRAR SESIÓN">
+<i class="w-4 h-4" data-lucide="log-out"></i>
+</button>
+</div>
+<!-- Botón MENÚ visible removido: el área superior queda limpia. -->
+<div aria-hidden="true" class="hidden">
+<button id="tab-home" onclick="switchView('home')"></button>
+<button id="tab-inventory" onclick="switchView('inventory')"></button>
+<button id="tab-loans" onclick="switchView('loans')"></button>
+<button id="tab-received" onclick="switchView('received')"></button>
+<button id="tab-sales" onclick="switchView('sales')"></button>
+<button id="tab-reports" onclick="switchView('reports')"></button>
+<button id="tab-users" onclick="switchView('users')"></button>
+</div>
+</nav>
+<!-- VISTAS PRINCIPALES -->
+<main class="flex-1 overflow-auto relative bg-slate-100 operation-mode" id="main-content">
+<!-- VISTA: INICIO -->
+<section class="max-w-6xl mx-auto block px-3 sm:px-6 py-4 sm:py-6" id="view-home">
+<div class="unified-hero text-white rounded-3xl p-4 sm:p-6 mb-4 overflow-hidden relative">
+<div class="relative z-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+<div>
+<span class="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.22em] text-blue-100 bg-white/10 border border-white/10 px-2 py-1 rounded-full mb-3"><i class="w-3 h-3" data-lucide="layout-grid"></i> Vista menú</span>
+<h2 class="text-xl sm:text-3xl font-black uppercase tracking-tight leading-tight">Menú principal</h2>
+<p class="text-xs sm:text-sm text-blue-100 mt-1 font-semibold max-w-2xl">Toca una card para abrir su ventana de opciones. Los botones quedan adentro de cada área, no en el menú principal.</p>
+</div>
+<button class="hidden sm:inline-flex items-center justify-center gap-1.5 bg-white text-slate-900 px-3 py-2 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-sm hover:bg-blue-50 transition" onclick="forceSync()">
+<i class="w-3.5 h-3.5" data-lucide="refresh-cw"></i> ACTUALIZAR
+</button>
+</div>
+</div>
 
-    <!-- ============================================== -->
-    <!-- CONTENEDOR PRINCIPAL                           -->
-    <!-- ============================================== -->
-    <div id="app-container" class="flex-1 flex flex-col h-full hidden opacity-0 transition-opacity duration-300">
-        
-        <!-- BARRA DE NAVEGACIÓN -->
-        <nav class="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 shadow-md flex justify-between items-center z-30 sticky top-0 overflow-x-auto whitespace-nowrap">
-            <div class="flex items-center gap-2 sm:gap-3 mr-3">
-                <div class="flex items-center gap-1 text-blue-400 shrink-0 bg-slate-800/50 p-1.5 rounded-lg border border-slate-700/50 shadow-inner">
-                    <i data-lucide="hammer" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                    <i data-lucide="wrench" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                </div>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-sm sm:text-base font-bold tracking-wide hidden sm:block uppercase ml-1">Entrega de Herramientas</h1>
-                    <button onclick="forceSync()" id="cloud-status" class="hidden items-center gap-1.5 text-[9px] bg-slate-800 hover:bg-slate-700 hover:text-white text-slate-300 px-2 py-1 rounded-lg border border-slate-600 transition-all uppercase font-black shrink-0 shadow-sm cursor-pointer" title="Sincronizar y Actualizar Datos">
-                        <i id="sync-icon" data-lucide="refresh-cw" class="w-3.5 h-3.5 shrink-0"></i> <span class="truncate text-[9px]" id="status-user-name">CONECTANDO...</span>
-                    </button>
-                    <button onclick="toggleFullScreen()" class="text-slate-400 hover:text-blue-400 transition flex items-center justify-center p-1 rounded hover:bg-slate-800 shrink-0 ml-1" title="PANTALLA COMPLETA">
-                        <i id="fs-icon" data-lucide="maximize" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 transition flex items-center justify-center p-1 rounded hover:bg-slate-800 shrink-0 ml-1" title="CERRAR SESIÓN">
-                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="flex gap-1 sm:gap-1.5">
-                <button onclick="switchView('home')" id="tab-home" class="px-2 sm:px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-white uppercase tracking-wider shadow-sm">
-                    <i data-lucide="home" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">INICIO</span>
-                </button>
-                <button onclick="switchView('inventory')" id="tab-inventory" class="!hidden hide-from-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
-                    <i data-lucide="package" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">HERRAMIENTAS</span><span class="sm:hidden">HERR.</span>
-                </button>
-                <button onclick="switchView('loans')" id="tab-loans" class="hide-from-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
-                    <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">PRÉSTAMOS</span><span class="sm:hidden">PRÉST.</span>
-                </button>
-                <button onclick="switchView('received')" id="tab-received" class="admin-user px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
-                    <i data-lucide="check-square" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">RECIBIDOS</span><span class="sm:hidden">REC.</span>
-                </button>
-                <button onclick="switchView('sales')" id="tab-sales" class="!hidden admin-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
-                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">CONSUMIBLES</span><span class="sm:hidden">CONS.</span>
-                </button>
-                <button onclick="switchView('reports')" id="tab-reports" class="admin-supervisor px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
-                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">REPORTES</span><span class="sm:hidden">REP.</span>
-                </button>
-                <button onclick="switchView('users')" id="tab-users" class="admin-only px-2 sm:px-2.5 py-1 rounded hover:bg-slate-800 transition font-bold flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-300 uppercase tracking-wider">
-                    <i data-lucide="users" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">USUARIOS</span><span class="sm:hidden">USR.</span>
-                </button>
-            </div>
-        </nav>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 
-        <!-- VISTAS PRINCIPALES -->
-        <main class="flex-1 overflow-auto relative bg-slate-100">
-            
-            <!-- VISTA: INICIO -->
-            <section id="view-home" class="max-w-6xl mx-auto block px-3 sm:px-6 py-4 sm:py-6">
-                <div class="mb-5">
-                    <h2 class="text-xl sm:text-2xl font-black text-slate-800 uppercase tracking-tight">Bienvenido a Entrega de Herramientas</h2>
-                    <p class="text-xs text-slate-500 mt-1 uppercase font-medium tracking-wide">Panel de Gestión Centralizado</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                    <div onclick="switchView('inventory')" class="hide-from-supervisor bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md hover:border-blue-300 transition group">
-                        <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-105 transition transform"><i data-lucide="package" class="w-5 h-5"></i></div>
-                        <h3 class="text-sm font-black text-slate-800 uppercase mb-1 tracking-wide">Herramientas</h3>
-                        <div class="flex items-center justify-between border-t border-slate-100 pt-2.5">
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">En sistema:</span>
-                            <span id="stat-total-tools" class="text-sm font-black text-blue-600">0</span>
-                        </div>
-                    </div>
-                    <div onclick="switchView('loans')" class="hide-from-supervisor bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md hover:border-emerald-300 transition group">
-                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-105 transition transform"><i data-lucide="clipboard-list" class="w-5 h-5"></i></div>
-                        <h3 class="text-sm font-black text-slate-800 uppercase mb-1 tracking-wide">Préstamos</h3>
-                        <div class="flex items-center justify-between border-t border-slate-100 pt-2.5">
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Activos:</span>
-                            <span id="stat-pending-loans" class="text-sm font-black text-emerald-600">0</span>
-                        </div>
-                    </div>
-                    <div onclick="switchView('sales')" class="admin-supervisor bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md hover:border-indigo-300 transition group">
-                        <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-105 transition transform"><i data-lucide="shopping-cart" class="w-5 h-5"></i></div>
-                        <h3 class="text-sm font-black text-slate-800 uppercase mb-1 tracking-wide">Consumibles</h3>
-                        <div class="flex items-center justify-between border-t border-slate-100 pt-2.5">
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Artículos:</span>
-                            <span id="stat-total-sales" class="text-sm font-black text-indigo-600">0</span>
-                        </div>
-                    </div>
-                    <div onclick="switchView('users')" class="admin-only bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-md hover:border-purple-300 transition group">
-                        <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mb-3 group-hover:scale-105 transition transform"><i data-lucide="users" class="w-5 h-5"></i></div>
-                        <h3 class="text-sm font-black text-slate-800 uppercase mb-1 tracking-wide">Usuarios</h3>
-                        <div class="flex items-center justify-between border-t border-slate-100 pt-2.5">
-                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Registrados:</span>
-                            <span id="stat-total-users" class="text-sm font-black text-purple-600">0</span>
-                        </div>
-                    </div>
-                </div>
+<article class="hide-from-supervisor menu-launch-card bg-white rounded-2xl shadow-sm border border-slate-200 transition overflow-hidden cursor-pointer" onclick="switchView('tools-menu')" tabindex="0" role="button" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchView('tools-menu')}">
+<div class="p-4 sm:p-5">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0"><i class="w-5 h-5" data-lucide="package"></i></div>
+<div class="min-w-0">
+<h3 class="text-base font-black text-slate-900 uppercase tracking-tight">Herramientas</h3>
+<p class="text-[10px] text-slate-500 font-bold uppercase leading-tight">Inventario y préstamos</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<span class="text-sm font-black text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded-lg" id="stat-total-tools">0</span>
+<i class="w-4 h-4 text-slate-400" data-lucide="arrow-right"></i>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+<span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Abrir ventana de opciones</span>
+<span class="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Activos: <b id="stat-pending-loans">0</b></span>
+</div>
+</div>
+</article>
 
-                <div class="mt-6">
-                    <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">ACCIONES RÁPIDAS</h4>
-                    <div class="hide-from-supervisor flex flex-col sm:flex-row gap-2 sm:gap-3 mb-2 sm:mb-3">
-                        <button onclick="openModal('modal-tool')" class="admin-user flex-1 bg-blue-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-blue-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
-                            <i data-lucide="plus-square" class="w-4 h-4"></i> AGREGAR HERRAMIENTA
-                        </button>
-                        <button onclick="openModal('modal-loan')" class="flex-1 bg-emerald-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
-                            <i data-lucide="plus-circle" class="w-4 h-4"></i> NUEVO PRÉSTAMO
-                        </button>
-                    </div>
-                    <div class="admin-supervisor flex flex-col sm:flex-row gap-2 sm:gap-3">
-                        <button onclick="openModal('modal-sales-input')" class="admin-only flex-1 bg-indigo-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-indigo-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
-                            <i data-lucide="package-plus" class="w-4 h-4"></i> REGISTRAR ENTRADA
-                        </button>
-                        <button onclick="openModal('modal-sales-output')" class="flex-1 bg-orange-600 text-white p-2.5 rounded-lg font-black uppercase tracking-widest shadow-lg hover:bg-orange-700 transition flex justify-center items-center gap-1.5 text-[10px] sm:text-xs">
-                            <i data-lucide="package-minus" class="w-4 h-4"></i> REGISTRAR SALIDA
-                        </button>
-                    </div>
-                </div>
-            </section>
+<article class="menu-launch-card bg-white rounded-2xl shadow-sm border border-slate-200 transition overflow-hidden cursor-pointer" onclick="switchView('consumibles-menu')" tabindex="0" role="button" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchView('consumibles-menu')}">
+<div class="p-4 sm:p-5">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center shrink-0"><i class="w-5 h-5" data-lucide="shopping-cart"></i></div>
+<div class="min-w-0">
+<h3 class="text-base font-black text-slate-900 uppercase tracking-tight">Consumibles</h3>
+<p class="text-[10px] text-slate-500 font-bold uppercase leading-tight">Entradas, salidas y recibidos</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<span class="admin-supervisor text-sm font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded-lg" id="stat-total-sales">0</span>
+<i class="w-4 h-4 text-slate-400" data-lucide="arrow-right"></i>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+<span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Abrir ventana de opciones</span>
+<span class="text-[9px] font-black text-indigo-600 uppercase tracking-widest">Consumibles</span>
+</div>
+</div>
+</article>
 
-            <!-- VISTA: HERRAMIENTAS -->
-            <section id="view-inventory" class="max-w-6xl mx-auto hidden w-full">
-                <div class="sticky top-0 z-20 bg-slate-100 border-b border-slate-200 px-3 sm:px-6 py-3">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mb-3">
-                        <div>
-                            <h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Inventario Maestro</h2>
-                            <p class="text-slate-500 text-[10px] sm:text-xs mt-0.5 uppercase italic">Toca una herramienta para ver detalles.</p>
-                        </div>
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <button onclick="exportToExcel('herramientas')" class="admin-only flex-1 sm:flex-none bg-emerald-600 text-white px-2.5 py-1.5 rounded-md hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase">
-                                <i data-lucide="download" class="w-3.5 h-3.5"></i> EXPORTAR
+<article class="admin-only menu-launch-card bg-white rounded-2xl shadow-sm border border-slate-200 transition overflow-hidden cursor-pointer" onclick="switchView('users-menu')" tabindex="0" role="button" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchView('users-menu')}">
+<div class="p-4 sm:p-5">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center shrink-0"><i class="w-5 h-5" data-lucide="users"></i></div>
+<div class="min-w-0">
+<h3 class="text-base font-black text-slate-900 uppercase tracking-tight">Usuarios</h3>
+<p class="text-[10px] text-slate-500 font-bold uppercase leading-tight">Accesos y roles</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<span class="text-sm font-black text-purple-600 bg-purple-50 border border-purple-100 px-2 py-1 rounded-lg" id="stat-total-users">0</span>
+<i class="w-4 h-4 text-slate-400" data-lucide="arrow-right"></i>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+<span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Abrir ventana de opciones</span>
+<span class="text-[9px] font-black text-purple-600 uppercase tracking-widest">Admin</span>
+</div>
+</div>
+</article>
+
+</div>
+</section>
+
+<!-- VISTA MENÚ: HERRAMIENTAS -->
+<section class="hide-from-supervisor menu-option-window max-w-6xl mx-auto hidden w-full px-3 sm:px-6 py-4 sm:py-6" id="view-tools-menu">
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+<div class="p-4 sm:p-5 border-b border-slate-100 bg-gradient-to-br from-blue-50 to-white">
+<button class="view-back-btn mb-4" onclick="switchView('home')"><i class="w-3.5 h-3.5" data-lucide="arrow-left"></i> Volver al menú</button>
+<div class="flex items-start gap-3">
+<div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0"><i class="w-5 h-5" data-lucide="package"></i></div>
+<div>
+<h2 class="text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight">Herramientas</h2>
+<p class="text-xs text-slate-500 font-bold uppercase mt-1">Botones de esta área</p>
+</div>
+</div>
+</div>
+<div class="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+<button class="menu-action-tile bg-slate-900 text-white px-4 py-4 rounded-2xl hover:bg-slate-800 transition shadow-sm flex flex-col items-start justify-center gap-2 text-left" onclick="switchView('inventory')">
+<i class="w-5 h-5" data-lucide="box"></i><span class="text-xs font-black uppercase tracking-widest">Ver inventario</span><span class="text-[10px] text-slate-300 font-bold uppercase">Consulta herramientas disponibles</span>
+</button>
+<button class="menu-action-tile bg-emerald-600 text-white px-4 py-4 rounded-2xl hover:bg-emerald-700 transition shadow-sm flex flex-col items-start justify-center gap-2 text-left" onclick="openModal('modal-loan')">
+<i class="w-5 h-5" data-lucide="plus-circle"></i><span class="text-xs font-black uppercase tracking-widest">Nuevo préstamo</span><span class="text-[10px] text-emerald-50 font-bold uppercase">Registrar una entrega</span>
+</button>
+<button class="menu-action-tile bg-white text-emerald-700 border border-emerald-200 px-4 py-4 rounded-2xl hover:bg-emerald-50 transition shadow-sm flex flex-col items-start justify-center gap-2 text-left" onclick="switchView('loans')">
+<i class="w-5 h-5" data-lucide="clipboard-list"></i><span class="text-xs font-black uppercase tracking-widest">Préstamos activos</span><span class="text-[10px] text-emerald-700/70 font-bold uppercase">Ver pendientes por devolver</span>
+</button>
+</div>
+</div>
+</section>
+
+<!-- VISTA MENÚ: CONSUMIBLES -->
+<section class="menu-option-window max-w-6xl mx-auto hidden w-full px-3 sm:px-6 py-4 sm:py-6" id="view-consumibles-menu">
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+<div class="p-4 sm:p-5 border-b border-slate-100 bg-gradient-to-br from-indigo-50 to-white">
+<button class="view-back-btn mb-4" onclick="switchView('home')"><i class="w-3.5 h-3.5" data-lucide="arrow-left"></i> Volver al menú</button>
+<div class="flex items-start gap-3">
+<div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center shrink-0"><i class="w-5 h-5" data-lucide="shopping-cart"></i></div>
+<div>
+<h2 class="text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight">Consumibles</h2>
+<p class="text-xs text-slate-500 font-bold uppercase mt-1">Botones de esta área</p>
+</div>
+</div>
+</div>
+<div class="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+<button class="admin-supervisor menu-action-tile bg-slate-900 text-white px-4 py-4 rounded-2xl hover:bg-slate-800 transition shadow-sm flex flex-col items-start justify-center gap-2 text-left" onclick="switchView('sales')">
+<i class="w-5 h-5" data-lucide="boxes"></i><span class="text-xs font-black uppercase tracking-widest">Ver catálogo</span><span class="text-[10px] text-slate-300 font-bold uppercase">Consultar stock disponible</span>
+</button>
+<button class="admin-only menu-action-tile bg-indigo-600 text-white px-4 py-4 rounded-2xl hover:bg-indigo-700 transition shadow-sm flex flex-col items-start justify-center gap-2 text-left" onclick="openModal('modal-sales-input')">
+<i class="w-5 h-5" data-lucide="package-plus"></i><span class="text-xs font-black uppercase tracking-widest">Entrada</span><span class="text-[10px] text-indigo-50 font-bold uppercase">Registrar ingreso</span>
+</button>
+<button class="admin-supervisor menu-action-tile bg-orange-600 text-white px-4 py-4 rounded-2xl hover:bg-orange-700 transition shadow-sm flex flex-col items-start justify-center gap-2 text-left" onclick="openModal('modal-sales-output')">
+<i class="w-5 h-5" data-lucide="package-minus"></i><span class="text-xs font-black uppercase tracking-widest">Salida</span><span class="text-[10px] text-orange-50 font-bold uppercase">Registrar retiro</span>
+</button>
+<button class="admin-only menu-action-tile bg-white text-indigo-700 border border-indigo-200 px-4 py-4 rounded-2xl hover:bg-indigo-50 transition shadow-sm flex flex-col items-start justify-center gap-2 text-left" onclick="openModal('modal-sales-item')">
+<i class="w-5 h-5" data-lucide="plus"></i><span class="text-xs font-black uppercase tracking-widest">Nuevo artículo</span><span class="text-[10px] text-indigo-700/70 font-bold uppercase">Crear artículo base</span>
+</button>
+<button class="admin-user menu-action-tile bg-white text-slate-700 border border-slate-200 px-4 py-4 rounded-2xl hover:bg-slate-50 transition shadow-sm flex flex-col items-start justify-center gap-2 text-left" onclick="switchView('received')">
+<i class="w-5 h-5" data-lucide="check-square"></i><span class="text-xs font-black uppercase tracking-widest">Recibidos del día</span><span class="text-[10px] text-slate-500 font-bold uppercase">Ver registros de hoy</span>
+</button>
+</div>
+</div>
+</section>
+
+<!-- VISTA MENÚ: USUARIOS -->
+<section class="admin-only menu-option-window max-w-6xl mx-auto hidden w-full px-3 sm:px-6 py-4 sm:py-6" id="view-users-menu">
+<div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+<div class="p-4 sm:p-5 border-b border-slate-100 bg-gradient-to-br from-purple-50 to-white">
+<button class="view-back-btn mb-4" onclick="switchView('home')"><i class="w-3.5 h-3.5" data-lucide="arrow-left"></i> Volver al menú</button>
+<div class="flex items-start gap-3">
+<div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center shrink-0"><i class="w-5 h-5" data-lucide="users"></i></div>
+<div>
+<h2 class="text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight">Usuarios</h2>
+<p class="text-xs text-slate-500 font-bold uppercase mt-1">Botones de esta área</p>
+</div>
+</div>
+</div>
+<div class="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 gap-3">
+<button class="menu-action-tile bg-purple-600 text-white px-4 py-4 rounded-2xl hover:bg-purple-700 transition shadow-sm flex flex-col items-start justify-center gap-2 text-left" onclick="switchView('users')">
+<i class="w-5 h-5" data-lucide="user-cog"></i><span class="text-xs font-black uppercase tracking-widest">Administrar usuarios</span><span class="text-[10px] text-purple-50 font-bold uppercase">Crear y editar accesos</span>
+</button>
+</div>
+</div>
+</section>
+
+<!-- BLOQUE UNIFICADO: HERRAMIENTAS -->
+<section class="max-w-6xl mx-auto hidden w-full" id="view-inventory">
+<div class="sticky top-0 z-20 bg-slate-100 border-b border-slate-200 px-3 sm:px-6 py-3">
+<div class="view-return-row"><button class="view-back-btn" onclick="switchView('tools-menu')"><i data-lucide="arrow-left"></i> Volver a herramientas</button></div>
+
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mb-3">
+<div>
+<h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Herramientas</h2>
+<p class="text-slate-500 text-[10px] sm:text-xs mt-0.5 uppercase italic">Busca, agrega y consulta herramientas sin salir del panel.</p>
+</div>
+<div class="flex gap-2 w-full sm:w-auto">
+<button class="admin-only flex-1 sm:flex-none bg-emerald-600 text-white px-2.5 py-1.5 rounded-md hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase" onclick="exportToExcel('herramientas')">
+<i class="w-3.5 h-3.5" data-lucide="download"></i> EXPORTAR
                             </button>
-                            <button onclick="openModal('modal-tool')" class="admin-user flex-1 sm:flex-none bg-blue-600 text-white px-2.5 py-1.5 rounded-md hover:bg-blue-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase">
-                                <i data-lucide="plus" class="w-3.5 h-3.5"></i> AGREGAR
+<button class="admin-user flex-1 sm:flex-none bg-blue-600 text-white px-2.5 py-1.5 rounded-md hover:bg-blue-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase" onclick="openModal('modal-tool')">
+<i class="w-3.5 h-3.5" data-lucide="plus"></i> AGREGAR
                             </button>
-                        </div>
-                    </div>
-                    <div class="flex gap-2 w-full">
-                        <div class="relative flex-1">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                            </div>
-                            <input type="text" id="inventory-search" onkeypress="if(event.key === 'Enter') searchInventoryDB()" class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-white shadow-sm text-xs" placeholder="BUSCAR HERRAMIENTA...">
-                        </div>
-                        <button onclick="searchInventoryDB()" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition shadow-sm font-black uppercase text-xs flex items-center gap-1 shrink-0">
-                            <i data-lucide="search" class="w-3.5 h-3.5"></i> BUSCAR
+</div>
+</div>
+<div class="flex gap-2 w-full">
+<div class="relative flex-1">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+<i class="w-4 h-4 text-slate-400" data-lucide="search"></i>
+</div>
+<input class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-white shadow-sm text-xs" id="inventory-search" onkeypress="if(event.key === 'Enter') searchInventoryDB()" placeholder="BUSCAR HERRAMIENTA..." type="text"/>
+</div>
+<button class="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition shadow-sm font-black uppercase text-xs flex items-center gap-1 shrink-0" onclick="searchInventoryDB()">
+<i class="w-3.5 h-3.5" data-lucide="search"></i> BUSCAR
                         </button>
-                    </div>
-                </div>
-                <div id="inventory-container" class="w-full px-3 sm:px-6 py-4">
-                    <div id="inventory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
-                    <div id="empty-inventory" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 w-full">
-                        <p class="uppercase text-xs font-bold tracking-widest">VACÍO</p>
-                    </div>
-                </div>
-            </section>
+</div>
+</div>
+<div class="w-full px-3 sm:px-6 py-4" id="inventory-container">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5" id="inventory-grid"></div>
+<div class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 w-full" id="empty-inventory">
+<p class="uppercase text-xs font-bold tracking-widest">VACÍO</p>
+</div>
+</div>
+</section>
+<!-- BLOQUE UNIFICADO: PRÉSTAMOS -->
+<section class="max-w-6xl mx-auto hidden w-full" id="view-loans">
+<div class="sticky top-0 z-20 bg-slate-100 border-b border-slate-200 px-3 sm:px-6 py-3">
+<div class="view-return-row"><button class="view-back-btn" onclick="switchView('tools-menu')"><i data-lucide="arrow-left"></i> Volver a herramientas</button></div>
 
-            <!-- VISTA: PRÉSTAMOS -->
-            <section id="view-loans" class="max-w-6xl mx-auto hidden w-full">
-                <div class="sticky top-0 z-20 bg-slate-100 border-b border-slate-200 px-3 sm:px-6 py-3">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mb-3">
-                        <h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Préstamos Pendientes</h2>
-                        <button onclick="openModal('modal-loan')" class="w-full sm:w-auto bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> NUEVO PRÉSTAMO
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mb-3">
+<h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Préstamos Activos</h2>
+<button class="w-full sm:w-auto bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase" onclick="openModal('modal-loan')">
+<i class="w-3.5 h-3.5" data-lucide="plus"></i> NUEVO PRÉSTAMO
                         </button>
-                    </div>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                        </div>
-                        <input type="text" id="loans-search" oninput="renderLoans()" class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-white shadow-sm text-xs uppercase" placeholder="BUSCAR SOLICITANTE...">
-                    </div>
-                </div>
-                <div id="loans-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-3 sm:px-6 py-4 pb-20"></div>
-                <div id="empty-loans" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 w-full mt-3 mx-3 sm:mx-6 w-[calc(100%-24px)] sm:w-[calc(100%-48px)]">
-                    <p class="uppercase text-xs font-bold tracking-widest">SIN PRÉSTAMOS ACTIVOS.</p>
-                </div>
-            </section>
+</div>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+<i class="w-4 h-4 text-slate-400" data-lucide="search"></i>
+</div>
+<input class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-white shadow-sm text-xs uppercase" id="loans-search" oninput="renderLoans()" placeholder="BUSCAR SOLICITANTE..." type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-3 sm:px-6 py-4 pb-20" id="loans-list-container"></div>
+<div class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 w-full mt-3 mx-3 sm:mx-6 w-[calc(100%-24px)] sm:w-[calc(100%-48px)]" id="empty-loans">
+<p class="uppercase text-xs font-bold tracking-widest">SIN PRÉSTAMOS ACTIVOS.</p>
+</div>
+</section>
+<!-- BLOQUE UNIFICADO: RECIBIDOS -->
+<section class="max-w-6xl mx-auto hidden w-full px-3 sm:px-6 py-4 pb-20" id="view-received">
+<div class="view-return-row"><button class="view-back-btn" onclick="switchView('consumibles-menu')"><i data-lucide="arrow-left"></i> Volver a consumibles</button></div>
+<div class="mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+<h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Recibidos del Día</h2>
+<div class="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+<button class="px-3 py-2 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition" onclick="changeReceivedDate(-1)"><i class="w-4 h-4" data-lucide="chevron-left"></i></button>
+<span class="px-4 py-2 text-xs font-black text-slate-800 uppercase min-w-[100px] text-center" id="received-date-display">HOY</span>
+<button class="px-3 py-2 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition" onclick="changeReceivedDate(1)"><i class="w-4 h-4" data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-[11px] border-collapse">
+<thead>
+<tr class="bg-slate-50 font-black text-slate-400 uppercase tracking-tighter border-b border-slate-200">
+<th class="p-3">FECHA Y HORA</th>
+<th class="p-3">SOLICITANTE</th>
+<th class="p-3">HERRAMIENTAS</th>
+<th class="p-3">ENTREGÓ</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 font-bold text-slate-700 uppercase" id="received-table-body"></tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- BLOQUE UNIFICADO: CONSUMIBLES -->
+<section class="max-w-6xl mx-auto hidden w-full" id="view-sales">
+<div class="sticky top-0 z-20 bg-slate-100 border-b border-slate-200 px-3 sm:px-6 py-3">
+<div class="view-return-row"><button class="view-back-btn" onclick="switchView('consumibles-menu')"><i data-lucide="arrow-left"></i> Volver a consumibles</button></div>
 
-            <!-- VISTA: RECIBIDOS -->
-            <section id="view-received" class="max-w-6xl mx-auto hidden w-full px-3 sm:px-6 py-4 pb-20">
-                <div class="mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Herramientas Recibidas</h2>
-                    <div class="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                        <button onclick="changeReceivedDate(-1)" class="px-3 py-2 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                        <span id="received-date-display" class="px-4 py-2 text-xs font-black text-slate-800 uppercase min-w-[100px] text-center">HOY</span>
-                        <button onclick="changeReceivedDate(1)" class="px-3 py-2 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-[11px] border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50 font-black text-slate-400 uppercase tracking-tighter border-b border-slate-200">
-                                    <th class="p-3">FECHA Y HORA</th>
-                                    <th class="p-3">SOLICITANTE</th>
-                                    <th class="p-3">HERRAMIENTAS</th>
-                                    <th class="p-3">ENTREGÓ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="received-table-body" class="divide-y divide-slate-100 font-bold text-slate-700 uppercase"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- VISTA: CONSUMIBLES -->
-            <section id="view-sales" class="max-w-6xl mx-auto hidden w-full">
-                <div class="sticky top-0 z-20 bg-slate-100 border-b border-slate-200 px-3 sm:px-6 py-3">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mb-3">
-                        <h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Catálogo de Consumibles</h2>
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <button onclick="exportToExcel('consumibles')" class="admin-only flex-1 sm:flex-none bg-emerald-600 text-white px-2.5 py-1.5 rounded-md hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase"><i data-lucide="download" class="w-3.5 h-3.5"></i> EXPORTAR</button>
-                            <button onclick="openModal('modal-sales-item')" class="admin-only flex-1 sm:flex-none bg-slate-800 text-white px-2.5 py-1.5 rounded-md hover:bg-slate-900 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase"><i data-lucide="plus" class="w-3.5 h-3.5"></i> NUEVO ART.</button>
-                        </div>
-                    </div>
-                    <div class="flex gap-2 w-full">
-                        <div class="relative flex-1">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                            </div>
-                            <input type="text" id="sales-search" onkeypress="if(event.key === 'Enter') searchSalesDB()" class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-white shadow-sm text-xs uppercase" placeholder="BUSCAR ARTÍCULO...">
-                        </div>
-                        <button onclick="searchSalesDB()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition shadow-sm font-black uppercase text-xs flex items-center gap-1 shrink-0">
-                            <i data-lucide="search" class="w-3.5 h-3.5"></i> BUSCAR
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mb-3">
+<h2 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight uppercase">Consumibles</h2>
+<div class="flex gap-2 w-full sm:w-auto flex-wrap"><button class="admin-only flex-1 sm:flex-none bg-indigo-600 text-white px-2.5 py-1.5 rounded-md hover:bg-indigo-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase" onclick="openModal('modal-sales-input')"><i class="w-3.5 h-3.5" data-lucide="package-plus"></i> ENTRADA</button><button class="admin-supervisor flex-1 sm:flex-none bg-orange-600 text-white px-2.5 py-1.5 rounded-md hover:bg-orange-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase" onclick="openModal('modal-sales-output')"><i class="w-3.5 h-3.5" data-lucide="package-minus"></i> SALIDA</button>
+<button class="admin-only flex-1 sm:flex-none bg-emerald-600 text-white px-2.5 py-1.5 rounded-md hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase" onclick="exportToExcel('consumibles')"><i class="w-3.5 h-3.5" data-lucide="download"></i> EXPORTAR</button>
+<button class="admin-only flex-1 sm:flex-none bg-slate-800 text-white px-2.5 py-1.5 rounded-md hover:bg-slate-900 transition shadow-sm flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold uppercase" onclick="openModal('modal-sales-item')"><i class="w-3.5 h-3.5" data-lucide="plus"></i> NUEVO ART.</button>
+</div>
+</div>
+<div class="flex gap-2 w-full">
+<div class="relative flex-1">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+<i class="w-4 h-4 text-slate-400" data-lucide="search"></i>
+</div>
+<input class="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-white shadow-sm text-xs uppercase" id="sales-search" onkeypress="if(event.key === 'Enter') searchSalesDB()" placeholder="BUSCAR ARTÍCULO..." type="text"/>
+</div>
+<button class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition shadow-sm font-black uppercase text-xs flex items-center gap-1 shrink-0" onclick="searchSalesDB()">
+<i class="w-3.5 h-3.5" data-lucide="search"></i> BUSCAR
                         </button>
-                    </div>
-                </div>
-                <div id="sales-container" class="w-full px-3 sm:px-6 py-4">
-                    <div id="sales-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
-                    <div id="empty-sales" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 w-full">
-                        <p class="uppercase text-xs font-bold tracking-widest">SIN ARTÍCULOS.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- VISTA: REPORTES -->
-            <section id="view-reports" class="max-w-6xl mx-auto hidden w-full px-3 sm:px-6 py-4 pb-20">
-                <div class="mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h2 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight uppercase leading-none">REPORTES</h2>
-                    </div>
-                    <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                        <select id="filter-user" onchange="renderReports()" class="admin-only flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">TODOS LOS USUARIOS</option>
-                        </select>
-                        <select id="filter-day" onchange="renderReports()" class="flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="all">TODOS</option>
-                        </select>
-                        <select id="filter-month" onchange="renderReports()" class="flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option><option value="04">Abril</option>
-                            <option value="05">Mayo</option><option value="06">Junio</option><option value="07">Julio</option><option value="08">Agosto</option>
-                            <option value="09">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-                        </select>
-                        <select id="filter-year" onchange="renderReports()" class="flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                        </select>
-                        <button id="btn-generate-report" onclick="generateReportDB()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition shadow-sm font-black uppercase text-xs flex items-center justify-center gap-1 shrink-0">
-                            <i data-lucide="play" class="w-3.5 h-3.5"></i> GENERAR REPORTE
+</div>
+</div>
+<div class="w-full px-3 sm:px-6 py-4" id="sales-container">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5" id="sales-grid"></div>
+<div class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center text-slate-500 w-full" id="empty-sales">
+<p class="uppercase text-xs font-bold tracking-widest">SIN ARTÍCULOS.</p>
+</div>
+</div>
+</section>
+<!-- VISTA: Reportes -->
+<section class="max-w-6xl mx-auto hidden w-full px-3 sm:px-6 py-4 pb-20" id="view-reports">
+<div class="view-return-row"><button class="view-back-btn" onclick="switchView('consumibles-menu')"><i data-lucide="arrow-left"></i> Volver a consumibles</button></div>
+<div class="mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div>
+<h2 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight uppercase leading-none">Reportes</h2>
+</div>
+<div class="flex flex-wrap gap-2 w-full sm:w-auto">
+<select class="admin-only flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500" id="filter-user" onchange="renderReports()">
+<option value="">TODOS LOS USUARIOS</option>
+</select>
+<select class="flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500" id="filter-day" onchange="renderReports()">
+<option value="all">TODOS</option>
+</select>
+<select class="flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500" id="filter-month" onchange="renderReports()">
+<option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option><option value="04">Abril</option>
+<option value="05">Mayo</option><option value="06">Junio</option><option value="07">Julio</option><option value="08">Agosto</option>
+<option value="09">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+</select>
+<select class="flex-1 sm:flex-none px-2 py-1.5 border border-slate-300 rounded-lg bg-white text-[10px] font-bold uppercase shadow-sm outline-none focus:ring-2 focus:ring-indigo-500" id="filter-year" onchange="renderReports()">
+</select>
+<button class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition shadow-sm font-black uppercase text-xs flex items-center justify-center gap-1 shrink-0" id="btn-generate-report" onclick="generateReportDB()">
+<i class="w-3.5 h-3.5" data-lucide="play"></i> GENERAR REPORTE
                         </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                    <div class="bg-white p-3 rounded-xl shadow-sm border border-indigo-100 flex flex-col items-center">
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1 text-center">PEDIDOS</span>
-                        <span id="rep-stat-total" class="text-lg font-black text-indigo-600">0</span>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl shadow-sm border border-emerald-100 flex flex-col items-center">
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1 text-center">UNIDADES</span>
-                        <span id="rep-stat-units" class="text-lg font-black text-emerald-600">0</span>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center col-span-2">
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1 text-center">TOP ARTÍCULO</span>
-                        <span id="rep-stat-top" class="text-[10px] font-black text-slate-800 uppercase truncate max-w-full">SIN DATOS</span>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-[11px] border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50 font-black text-slate-400 uppercase tracking-tighter border-b border-slate-200">
-                                    <th class="p-3">FECHA</th>
-                                    <th class="p-3">ARTÍCULO</th>
-                                    <th class="p-3 text-center">CANT</th>
-                                    <th class="p-3">RECIBE</th>
-                                    <th class="p-3">SUPERVISOR</th>
-                                    <th class="p-3 text-right admin-only w-16"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="reports-table-body" class="divide-y divide-slate-100 font-bold text-slate-700 uppercase"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- VISTA: USUARIOS -->
-            <section id="view-users" class="max-w-4xl mx-auto hidden w-full px-3 sm:px-6 py-4 pb-20">
-                <form id="form-user" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-5" onsubmit="handleUserSubmit(event)">
-                    <h2 class="text-base font-black text-slate-900 tracking-tight uppercase mb-4">Usuarios del Sistema</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <input type="text" id="new-user-name" placeholder="NOMBRE COMPLETO" class="w-full px-3 py-2 border rounded-lg text-xs font-bold uppercase bg-slate-50 outline-none">
-                        <input type="email" id="new-user-email" placeholder="CORREO" required class="w-full px-3 py-2 border rounded-lg text-xs lowercase bg-slate-50 outline-none">
-                        <input type="password" id="new-user-pass" placeholder="CONTRASEÑA" required class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 outline-none">
-                        <select id="new-user-rol" class="w-full px-3 py-2 border rounded-lg text-xs font-bold uppercase bg-slate-50 outline-none">
-                            <option value="usuario">Usuario</option><option value="supervisor">Supervisor</option><option value="admin">Admin</option>
-                        </select>
-                    </div>
-                    <button type="submit" id="btn-create-user" class="w-full bg-[#0f172a] text-white py-2 rounded-lg font-black uppercase text-xs shadow-md">REGISTRAR / ACTUALIZAR</button>
-                </form>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto"><table class="w-full text-left border-collapse"><tbody id="users-list-container" class="divide-y divide-slate-100 text-xs font-bold text-slate-800"></tbody></table></div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- ============================================== -->
-    <!-- MODALES COMPLETOS Y ÚNICOS                     -->
-    <!-- ============================================== -->
-
-    <!-- Modal: Agregar/Editar Herramienta -->
-    <div id="modal-tool" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
-        <div class="bg-white w-full h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
-            <div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100">
-                <h3 id="modal-tool-title" class="text-base font-black text-slate-800 uppercase">AGREGAR HERRAMIENTA</h3>
-                <button onclick="closeModal('modal-tool')" class="text-slate-400 hover:text-slate-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <form id="form-tool" class="p-3 sm:p-4 overflow-y-auto" onsubmit="handleToolSubmit(event)">
-                <div class="space-y-3">
-                    <input type="hidden" id="tool-id">
-                    <div>
-                        <label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Nombre *</label>
-                        <input type="text" id="tool-name" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="EJ: TALADRO BOSCH">
-                    </div>
-                    <div>
-                        <label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Cantidad *</label>
-                        <input type="number" id="tool-qty" min="1" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 text-xs" value="1">
-                    </div>
-                    <div>
-                        <label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Imagen de la Herramienta</label>
-                        <div class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-slate-50 flex items-center text-xs text-slate-500 overflow-hidden">
-                            <input type="file" id="tool-image" accept="image/*" class="block w-full text-[10px] text-slate-500 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer uppercase">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Estante *</label>
-                            <input type="text" id="tool-shelf" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="A1">
-                        </div>
-                        <div>
-                            <label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Fila *</label>
-                            <input type="text" id="tool-row" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="2">
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-5 pt-3 border-t border-slate-100 flex justify-end gap-2">
-                    <button type="button" onclick="closeModal('modal-tool')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition font-bold uppercase">CANCELAR</button>
-                    <button type="submit" id="modal-tool-submit" class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-black shadow-sm uppercase tracking-wider">GUARDAR</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal: Detalles e Historial de Herramienta -->
-    <div id="modal-history" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
-        <div class="bg-white w-full h-full sm:h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-2xl modal-enter flex flex-col">
-            <div class="flex justify-between items-start p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
-                <div class="flex gap-3 items-start min-w-0">
-                    <div id="history-tool-image-container" class="w-12 h-12 shrink-0 bg-white border border-slate-200 rounded-lg overflow-hidden flex items-center justify-center cursor-pointer shadow-sm"></div>
-                    <div class="min-w-0">
-                        <h3 id="history-tool-name" class="text-base font-black text-slate-800 uppercase leading-none mb-1 truncate">DETALLES</h3>
-                        <p id="history-tool-id" class="text-[9px] text-blue-600 font-bold tracking-widest uppercase mb-1"></p>
-                    </div>
-                </div>
-                <button onclick="closeModal('modal-history')" class="text-slate-400 hover:text-slate-600 transition shrink-0 ml-2"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <div id="history-tool-details" class="p-3 bg-blue-50/50 border-b border-blue-100 flex gap-3 text-center">
-                <div class="flex-1"><span class="text-[9px] text-slate-400 font-black uppercase tracking-tighter block mb-0.5">UBICACIÓN</span><p id="history-tool-location" class="text-xs text-slate-700 font-bold uppercase"></p></div>
-                <div class="flex-1 border-l border-blue-100"><span class="text-[9px] text-slate-400 font-black uppercase tracking-tighter block mb-0.5">DISPONIBILIDAD</span><p id="history-tool-qty" class="text-xs text-slate-700 font-bold uppercase"></p></div>
-            </div>
-            <div class="px-4 pt-3"><h4 class="text-[9px] text-slate-400 font-black uppercase tracking-widest border-b border-slate-100 pb-1">HISTORIAL DE ENTREGAS</h4></div>
-            <div id="history-content" class="p-3 overflow-y-auto space-y-2.5 flex-1"></div>
-            <div class="p-3 border-t border-slate-100 text-center bg-slate-50 rounded-b-xl">
-                <button onclick="closeModal('modal-history')" class="px-5 py-1.5 bg-slate-800 text-white text-xs font-black rounded-lg uppercase tracking-widest shadow-sm">CERRAR</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Registrar Préstamo -->
-    <div id="modal-loan" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
-        <div class="bg-white w-full h-full sm:h-[85vh] sm:max-h-[95vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
-            <div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
-                <h3 id="modal-loan-title" class="text-base font-black text-slate-800 uppercase">REGISTRAR PRÉSTAMO</h3>
-                <button onclick="closeModal('modal-loan')" class="text-slate-400 hover:text-slate-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <form id="form-loan" class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col" onsubmit="handleLoanSubmit(event)">
-                <div class="space-y-3 pb-20">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">NOMBRE SOLICITANTE *</label>
-                        <input type="text" list="solicitantes" id="loan-applicant" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 font-bold uppercase text-xs" placeholder="ESCRIBIR...">
-                        <datalist id="solicitantes"></datalist>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">QUIÉN ENTREGA *</label>
-                        <input type="text" list="entregadores" id="loan-deliverer" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 font-bold uppercase text-xs" placeholder="TU NOMBRE...">
-                        <datalist id="entregadores"></datalist>
-                    </div>
-                    
-                    <div class="pt-2 border-t border-slate-100">
-                        <label class="block font-bold text-slate-700 mb-1.5 uppercase text-[10px]">HERRAMIENTAS</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-                                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
-                            </div>
-                            <input type="text" id="tool-search" class="w-full pl-7 pr-8 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="BUSCAR PARA AGREGAR...">
-                            <button type="button" onclick="clearSearchInput('tool-search')" class="absolute right-0 top-0 bottom-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-                            <div id="search-results" class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs"></div>
-                        </div>
-
-                        <div class="mt-3">
-                            <h4 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">LISTA SELECCIONADA</h4>
-                            <div id="selected-tools-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-                                <p class="text-[10px] text-slate-400 italic text-center py-1.5 bg-slate-50 rounded border border-dashed border-slate-200 uppercase font-bold">VACÍO</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2 shrink-0">
-                    <button type="button" onclick="closeModal('modal-loan')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition font-bold uppercase">CANCELAR</button>
-                    <button type="submit" id="modal-loan-submit" class="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-black shadow-sm uppercase tracking-wider">REGISTRAR</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal: Nuevo Artículo Consumible -->
-    <div id="modal-sales-item" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
-        <div class="bg-white w-full h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
-            <div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100">
-                <h3 id="modal-sales-item-title" class="text-base font-black text-slate-800 uppercase">NUEVO ARTÍCULO BASE</h3>
-                <button onclick="closeModal('modal-sales-item')" class="text-slate-400 hover:text-slate-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <form id="form-sales-item" class="p-3 sm:p-4 overflow-y-auto" onsubmit="handleSalesItemSubmit(event)">
-                <div class="space-y-3">
-                    <input type="hidden" id="sales-item-id">
-                    <input type="hidden" id="sales-item-code">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Nombre del Artículo *</label>
-                        <input type="text" id="sales-item-name" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase text-xs" placeholder="EJ: ACEITE FUERA DE BORDA...">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Cantidad Inicial</label>
-                        <input type="number" id="sales-item-qty" min="0" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 text-xs" value="0">
-                        <p class="text-[8px] font-bold text-slate-400 mt-1 uppercase leading-tight">Normalmente se llena con el registro de entradas, dejar en 0 si no hay stock.</p>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Imagen</label>
-                        <div class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-slate-50 flex items-center text-xs text-slate-500 overflow-hidden">
-                            <input type="file" id="sales-item-image" accept="image/*" class="block w-full text-[10px] font-bold text-slate-500 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer uppercase">
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-5 pt-3 border-t border-slate-100 flex justify-end gap-2">
-                    <button type="button" onclick="closeModal('modal-sales-item')" class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition font-bold uppercase">CANCELAR</button>
-                    <button type="submit" class="px-3 py-1.5 text-xs bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition font-black shadow-sm uppercase tracking-wider">GUARDAR</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal: Registrar Entrada (Ingresos) -->
-    <div id="modal-sales-input" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
-        <div class="bg-white w-full h-full sm:h-[80vh] sm:max-h-[95vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
-            <div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
-                <h3 class="text-base font-black text-slate-800 uppercase">ENTRADAS FORM</h3>
-                <button onclick="closeModal('modal-sales-input')" class="text-slate-400 hover:text-slate-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <form id="form-sales-input" class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col" onsubmit="handleSalesInputSubmit(event)">
-                <div class="space-y-3 pb-20">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">ARTÍCULO *</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none"><i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i></div>
-                            <input type="text" id="sales-in-search" oninput="searchSalesArticles('in')" class="w-full pl-7 pr-8 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" placeholder="BUSCAR...">
-                            <button type="button" onclick="clearSearchInput('sales-in-search')" class="absolute right-0 top-0 bottom-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-                            <div id="sales-in-results" class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs"></div>
-                        </div>
-                        <div id="sales-in-selected" class="hidden mt-1.5 p-2 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-between">
-                            <span id="sales-in-selected-name" class="text-[10px] font-black uppercase truncate text-indigo-900 pr-2"></span>
-                            <button type="button" onclick="clearSalesSelection('in')" class="text-indigo-500 hover:text-indigo-700"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
-                        </div>
-                        <input type="hidden" id="sales-in-article-id" required>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">CANTIDAD DE ENTRADA *</label>
-                        <div class="flex items-center h-8">
-                            <button type="button" class="w-8 h-full border border-slate-300 rounded-l-lg bg-slate-50 flex items-center justify-center font-bold text-base hover:bg-slate-100" onclick="adjustInputQty('sales-in-qty', -1)">-</button>
-                            <input type="number" id="sales-in-qty" min="1" required class="w-full h-full px-2 border-y border-slate-300 focus:ring-0 outline-none text-center font-bold text-sm" value="1">
-                            <button type="button" class="w-8 h-full border border-slate-300 rounded-r-lg bg-slate-50 flex items-center justify-center font-bold text-base hover:bg-slate-100" onclick="adjustInputQty('sales-in-qty', 1)">+</button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">FECHA DE ENTRADA</label>
-                        <input type="date" id="sales-in-date" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase font-bold text-xs">
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2 shrink-0">
-                    <button type="button" onclick="closeModal('modal-sales-input')" class="px-3 py-1.5 text-xs text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-lg transition font-bold uppercase">CANCELAR</button>
-                    <button type="submit" class="px-3 py-1.5 text-xs bg-indigo-900 text-white rounded-lg hover:bg-indigo-800 transition font-black shadow-sm uppercase tracking-wider">GUARDAR</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal: Registrar Salida (Consumo/Venta) -->
-    <div id="modal-sales-output" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
-        <div class="bg-white w-full h-full sm:h-[85vh] sm:max-h-[95vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
-            <div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
-                <h3 class="text-base font-black text-slate-800 uppercase">SALIDAS FORM</h3>
-                <button onclick="closeModal('modal-sales-output')" class="text-slate-400 hover:text-slate-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <form id="form-sales-output" class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col" onsubmit="handleSalesOutputSubmit(event)">
-                <div class="space-y-3 pb-20">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">SUPERVISOR A CARGO</label>
-                        <div class="px-2.5 py-1.5 bg-slate-100 border border-slate-200 rounded-lg font-black text-slate-700 text-xs uppercase flex items-center gap-1.5 shadow-inner">
-                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i><span id="sales-out-supervisor-display">CARGANDO...</span>
-                        </div>
-                    </div>
-                    <div class="pt-2 border-t border-slate-100">
-                        <label class="block font-bold text-slate-700 mb-1.5 uppercase text-[10px]">ARTÍCULOS A RETIRAR *</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none"><i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i></div>
-                            <input type="text" id="sales-out-search" oninput="searchSalesArticles('out')" class="w-full pl-7 pr-8 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" placeholder="BUSCAR ARTÍCULO...">
-                            <button type="button" onclick="clearSearchInput('sales-out-search')" class="absolute right-0 top-0 bottom-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-                            <div id="sales-out-results" class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs"></div>
-                        </div>
-                        <div class="mt-3">
-                            <h4 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">LISTA DE SALIDA</h4>
-                            <div id="selected-sales-out-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-                                <p class="text-[10px] text-slate-400 italic text-center py-1.5 bg-slate-50 rounded border border-dashed border-slate-200 uppercase font-bold">VACÍO</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pt-2 border-t border-slate-100">
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">PARA USO EN *</label>
-                        <textarea id="sales-out-uso" required rows="2" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 uppercase text-xs resize-none" placeholder="DESCRIPCIÓN DEL USO..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">NOMBRE DEL QUE RECIBE *</label>
-                        <input type="text" list="receptores-consumibles" id="sales-out-recibe" required class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 font-bold uppercase text-xs" placeholder="ESCRIBIR...">
-                        <datalist id="receptores-consumibles"></datalist>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2 shrink-0">
-                    <button type="button" onclick="closeModal('modal-sales-output')" class="px-3 py-1.5 text-xs text-orange-600 border border-orange-200 hover:bg-orange-50 rounded-lg transition font-bold uppercase">CANCELAR</button>
-                    <button type="submit" class="px-3 py-1.5 text-xs bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-black shadow-lg uppercase tracking-wider">REGISTRAR SALIDA</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Detalles Consumibles (Historial) -->
-    <div id="modal-sales-history" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4">
-        <div class="bg-white w-full h-full sm:h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-2xl modal-enter flex flex-col">
-            <div class="flex justify-between items-start p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
-                <div class="flex gap-3 items-start min-w-0">
-                    <div id="sales-history-image-container" class="w-12 h-12 shrink-0 bg-white border border-slate-200 rounded-lg overflow-hidden flex items-center justify-center cursor-pointer shadow-sm"></div>
-                    <div class="min-w-0">
-                        <h3 id="sales-history-name" class="text-base font-black text-slate-800 uppercase leading-none mb-1 truncate">DETALLES</h3>
-                        <p id="sales-history-code" class="text-[9px] text-indigo-600 font-bold tracking-widest uppercase mb-2"></p>
-                        <div class="flex gap-1.5">
-                            <button onclick="document.getElementById('btn-quick-in-hidden').click()" class="admin-only bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider transition flex items-center gap-1 shadow-sm"><i data-lucide="package-plus" class="w-3 h-3"></i> ENTRADA</button>
-                            <button onclick="document.getElementById('btn-quick-out-hidden').click()" class="bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider transition flex items-center gap-1 shadow-sm"><i data-lucide="package-minus" class="w-3 h-3"></i> SALIDA</button>
-                        </div>
-                        <button id="btn-quick-in-hidden" class="hidden"></button><button id="btn-quick-out-hidden" class="hidden"></button>
-                    </div>
-                </div>
-                <button onclick="closeModal('modal-sales-history')" class="text-slate-400 hover:text-slate-600 transition shrink-0 ml-2"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <div id="sales-history-qty-container" class="p-3 border-b text-center transition-colors duration-300">
-                <span id="sales-history-qty-label" class="text-[9px] font-black uppercase tracking-tighter block mb-0.5 transition-colors duration-300">STOCK DISPONIBLE</span>
-                <p id="sales-history-qty" class="text-2xl font-black uppercase transition-colors duration-300"></p>
-                <p id="sales-history-warning" class="hidden text-[9px] font-black uppercase tracking-widest mt-1 animate-pulse"></p>
-            </div>
-            <div class="flex border-b border-slate-100 bg-white shrink-0">
-                <button id="tab-history-in" onclick="switchHistoryTab('in')" class="admin-only flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/30 transition">ENTRADAS</button>
-                <button id="tab-history-out" onclick="switchHistoryTab('out')" class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-orange-600 border-b-2 border-transparent transition">SALIDAS</button>
-            </div>
-            <div class="p-3 overflow-y-auto flex-1 flex flex-col">
-                <div id="view-history-in" class="block admin-only">
-                    <div class="flex justify-between items-center mb-2 border-b border-indigo-100 pb-1.5"><h4 class="text-[9px] text-indigo-500 font-black uppercase tracking-widest flex items-center gap-1"><i data-lucide="arrow-down-left" class="w-3 h-3"></i> ENTRADAS</h4><button onclick="exportItemHistory('in')" class="text-[8px] bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 px-1.5 py-1 rounded font-bold uppercase flex items-center gap-1 transition shadow-sm"><i data-lucide="download" class="w-2.5 h-2.5"></i> XLSX</button></div>
-                    <div id="sales-history-in-content" class="space-y-2"></div>
-                </div>
-                <div id="view-history-out" class="hidden">
-                    <div class="flex justify-between items-center mb-2 border-b border-orange-100 pb-1.5"><h4 class="text-[9px] text-orange-500 font-black uppercase tracking-widest flex items-center gap-1"><i data-lucide="arrow-up-right" class="w-3 h-3"></i> SALIDAS</h4><button onclick="exportItemHistory('out')" class="text-[8px] bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200 px-1.5 py-1 rounded font-bold uppercase flex items-center gap-1 transition shadow-sm"><i data-lucide="download" class="w-2.5 h-2.5"></i> XLSX</button></div>
-                    <div id="sales-history-out-content" class="space-y-2"></div>
-                </div>
-            </div>
-            <div class="p-3 border-t border-slate-100 text-center bg-slate-50 rounded-b-xl">
-                <button onclick="closeModal('modal-sales-history')" class="px-5 py-1.5 bg-slate-800 text-white text-xs font-black rounded-lg uppercase tracking-widest shadow-sm">CERRAR</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Confirmar Acción -->
-    <div id="modal-confirm" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-4 text-xs">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-xs modal-enter flex flex-col border border-slate-200">
-            <div class="p-5 text-center">
-                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3"><i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i></div>
-                <h3 id="confirm-title" class="text-base font-black text-slate-800 mb-1.5 uppercase">¿Eliminar?</h3>
-                <p id="confirm-desc" class="text-[9px] text-slate-500 mb-5 uppercase font-bold leading-tight">Esta acción no se puede deshacer.</p>
-                <div class="flex gap-2 justify-center">
-                    <button onclick="closeModal('modal-confirm')" class="px-3 py-1.5 text-xs text-slate-600 bg-slate-100 rounded-lg transition font-bold w-full uppercase">NO</button>
-                    <button id="confirm-action-btn" class="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-black shadow-sm w-full uppercase">SÍ, BORRAR</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Visor de Imagen -->
-    <div id="modal-image-viewer" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[70] backdrop-blur-md p-4" onclick="closeImageViewer()">
-        <button class="absolute top-4 right-4 text-white/60 hover:text-white p-2" onclick="closeImageViewer()"><i data-lucide="x" class="w-8 h-8"></i></button>
-        <img id="full-screen-image" src="" alt="Vista" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" onclick="event.stopPropagation()">
-    </div>
-
-    <div id="toast-container" class="fixed bottom-4 right-4 flex flex-col gap-2 z-[60] items-end pointer-events-none"></div>
-
-    <script>
+</div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+<div class="bg-white p-3 rounded-xl shadow-sm border border-indigo-100 flex flex-col items-center">
+<span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1 text-center">PEDIDOS</span>
+<span class="text-lg font-black text-indigo-600" id="rep-stat-total">0</span>
+</div>
+<div class="bg-white p-3 rounded-xl shadow-sm border border-emerald-100 flex flex-col items-center">
+<span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1 text-center">UNIDADES</span>
+<span class="text-lg font-black text-emerald-600" id="rep-stat-units">0</span>
+</div>
+<div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center col-span-2">
+<span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1 text-center">TOP ARTÍCULO</span>
+<span class="text-[10px] font-black text-slate-800 uppercase truncate max-w-full" id="rep-stat-top">SIN DATOS</span>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-[11px] border-collapse">
+<thead>
+<tr class="bg-slate-50 font-black text-slate-400 uppercase tracking-tighter border-b border-slate-200">
+<th class="p-3">FECHA</th>
+<th class="p-3">ARTÍCULO</th>
+<th class="p-3 text-center">CANT</th>
+<th class="p-3">RECIBE</th>
+<th class="p-3">SUPERVISOR</th>
+<th class="p-3 text-right admin-only w-16"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 font-bold text-slate-700 uppercase" id="reports-table-body"></tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- VISTA: USUARIOS -->
+<section class="max-w-4xl mx-auto hidden w-full px-3 sm:px-6 py-4 pb-20" id="view-users">
+<div class="view-return-row"><button class="view-back-btn" onclick="switchView('users-menu')"><i data-lucide="arrow-left"></i> Volver a usuarios</button></div>
+<form class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-5" id="form-user" onsubmit="handleUserSubmit(event)">
+<h2 class="text-base font-black text-slate-900 tracking-tight uppercase mb-4">Usuarios del Sistema</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+<input class="w-full px-3 py-2 border rounded-lg text-xs font-bold uppercase bg-slate-50 outline-none" id="new-user-name" placeholder="NOMBRE COMPLETO" type="text"/>
+<input class="w-full px-3 py-2 border rounded-lg text-xs lowercase bg-slate-50 outline-none" id="new-user-email" placeholder="CORREO" required="" type="email"/>
+<input class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 outline-none" id="new-user-pass" placeholder="CONTRASEÑA" required="" type="password"/>
+<select class="w-full px-3 py-2 border rounded-lg text-xs font-bold uppercase bg-slate-50 outline-none" id="new-user-rol">
+<option value="usuario">Usuario</option><option value="supervisor">Supervisor</option><option value="admin">Admin</option>
+</select>
+</div>
+<button class="w-full bg-[#0f172a] text-white py-2 rounded-lg font-black uppercase text-xs shadow-md" id="btn-create-user" type="submit">REGISTRAR / ACTUALIZAR</button>
+</form>
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+<div class="overflow-x-auto"><table class="w-full text-left border-collapse"><tbody class="divide-y divide-slate-100 text-xs font-bold text-slate-800" id="users-list-container"></tbody></table></div>
+</div>
+</section>
+</main>
+</div>
+<!-- ============================================== -->
+<!-- MODALES COMPLETOS Y ÚNICOS                     -->
+<!-- ============================================== -->
+<!-- Modal: Agregar/Editar Herramienta -->
+<div class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4" id="modal-tool">
+<div class="bg-white w-full h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
+<div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100">
+<h3 class="text-base font-black text-slate-800 uppercase" id="modal-tool-title">AGREGAR HERRAMIENTA</h3>
+<button class="text-slate-400 hover:text-slate-600 transition" onclick="closeModal('modal-tool')"><i class="w-5 h-5" data-lucide="x"></i></button>
+</div>
+<form class="p-3 sm:p-4 overflow-y-auto" id="form-tool" onsubmit="handleToolSubmit(event)">
+<div class="space-y-3">
+<input id="tool-id" type="hidden"/>
+<div>
+<label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Nombre *</label>
+<input class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 uppercase text-xs" id="tool-name" placeholder="EJ: TALADRO BOSCH" required="" type="text"/>
+</div>
+<div>
+<label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Cantidad *</label>
+<input class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 text-xs" id="tool-qty" min="1" required="" type="number" value="1"/>
+</div>
+<div>
+<label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Imagen de la Herramienta</label>
+<div class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-slate-50 flex items-center text-xs text-slate-500 overflow-hidden">
+<input accept="image/*" class="block w-full text-[10px] text-slate-500 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer uppercase" id="tool-image" type="file"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Estante *</label>
+<input class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 uppercase text-xs" id="tool-shelf" placeholder="A1" required="" type="text"/>
+</div>
+<div>
+<label class="block text-slate-700 mb-1 uppercase font-bold text-[10px]">Fila *</label>
+<input class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-slate-50 uppercase text-xs" id="tool-row" placeholder="2" required="" type="text"/>
+</div>
+</div>
+</div>
+<div class="mt-5 pt-3 border-t border-slate-100 flex justify-end gap-2">
+<button class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition font-bold uppercase" onclick="closeModal('modal-tool')" type="button">CANCELAR</button>
+<button class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-black shadow-sm uppercase tracking-wider" id="modal-tool-submit" type="submit">GUARDAR</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Detalles e Historial de Herramienta -->
+<div class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4" id="modal-history">
+<div class="bg-white w-full h-full sm:h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-2xl modal-enter flex flex-col">
+<div class="flex justify-between items-start p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+<div class="flex gap-3 items-start min-w-0">
+<div class="w-12 h-12 shrink-0 bg-white border border-slate-200 rounded-lg overflow-hidden flex items-center justify-center cursor-pointer shadow-sm" id="history-tool-image-container"></div>
+<div class="min-w-0">
+<h3 class="text-base font-black text-slate-800 uppercase leading-none mb-1 truncate" id="history-tool-name">DETALLES</h3>
+<p class="text-[9px] text-blue-600 font-bold tracking-widest uppercase mb-1" id="history-tool-id"></p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-600 transition shrink-0 ml-2" onclick="closeModal('modal-history')"><i class="w-5 h-5" data-lucide="x"></i></button>
+</div>
+<div class="p-3 bg-blue-50/50 border-b border-blue-100 flex gap-3 text-center" id="history-tool-details">
+<div class="flex-1"><span class="text-[9px] text-slate-400 font-black uppercase tracking-tighter block mb-0.5">UBICACIÓN</span><p class="text-xs text-slate-700 font-bold uppercase" id="history-tool-location"></p></div>
+<div class="flex-1 border-l border-blue-100"><span class="text-[9px] text-slate-400 font-black uppercase tracking-tighter block mb-0.5">DISPONIBILIDAD</span><p class="text-xs text-slate-700 font-bold uppercase" id="history-tool-qty"></p></div>
+</div>
+<div class="px-4 pt-3"><h4 class="text-[9px] text-slate-400 font-black uppercase tracking-widest border-b border-slate-100 pb-1">HISTORIAL DE ENTREGAS</h4></div>
+<div class="p-3 overflow-y-auto space-y-2.5 flex-1" id="history-content"></div>
+<div class="p-3 border-t border-slate-100 text-center bg-slate-50 rounded-b-xl">
+<button class="px-5 py-1.5 bg-slate-800 text-white text-xs font-black rounded-lg uppercase tracking-widest shadow-sm" onclick="closeModal('modal-history')">CERRAR</button>
+</div>
+</div>
+</div>
+<!-- Modal: Registrar Préstamo -->
+<div class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4" id="modal-loan">
+<div class="bg-white w-full h-full sm:h-[85vh] sm:max-h-[95vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
+<div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+<h3 class="text-base font-black text-slate-800 uppercase" id="modal-loan-title">REGISTRAR PRÉSTAMO</h3>
+<button class="text-slate-400 hover:text-slate-600 transition" onclick="closeModal('modal-loan')"><i class="w-5 h-5" data-lucide="x"></i></button>
+</div>
+<form class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col" id="form-loan" onsubmit="handleLoanSubmit(event)">
+<div class="space-y-3 pb-20">
+<div>
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">NOMBRE SOLICITANTE *</label>
+<input class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 font-bold uppercase text-xs" id="loan-applicant" list="solicitantes" placeholder="ESCRIBIR..." required="" type="text"/>
+<datalist id="solicitantes"></datalist>
+</div>
+<div>
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">QUIÉN ENTREGA *</label>
+<input class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 font-bold uppercase text-xs" id="loan-deliverer" list="entregadores" placeholder="TU NOMBRE..." required="" type="text"/>
+<datalist id="entregadores"></datalist>
+</div>
+<div class="pt-2 border-t border-slate-100">
+<label class="block font-bold text-slate-700 mb-1.5 uppercase text-[10px]">HERRAMIENTAS</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+<i class="w-3.5 h-3.5 text-slate-400" data-lucide="search"></i>
+</div>
+<input class="w-full pl-7 pr-8 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition bg-slate-50 uppercase text-xs" id="tool-search" placeholder="BUSCAR PARA AGREGAR..." type="text"/>
+<button class="absolute right-0 top-0 bottom-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600" onclick="clearSearchInput('tool-search')" type="button"><i class="w-3.5 h-3.5" data-lucide="x"></i></button>
+<div class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs" id="search-results"></div>
+</div>
+<div class="mt-3">
+<h4 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">LISTA SELECCIONADA</h4>
+<div class="space-y-1.5 max-h-40 overflow-y-auto pr-1" id="selected-tools-list">
+<p class="text-[10px] text-slate-400 italic text-center py-1.5 bg-slate-50 rounded border border-dashed border-slate-200 uppercase font-bold">VACÍO</p>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2 shrink-0">
+<button class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition font-bold uppercase" onclick="closeModal('modal-loan')" type="button">CANCELAR</button>
+<button class="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-black shadow-sm uppercase tracking-wider" id="modal-loan-submit" type="submit">REGISTRAR</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Nuevo Artículo Consumible -->
+<div class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4" id="modal-sales-item">
+<div class="bg-white w-full h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
+<div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100">
+<h3 class="text-base font-black text-slate-800 uppercase" id="modal-sales-item-title">NUEVO ARTÍCULO BASE</h3>
+<button class="text-slate-400 hover:text-slate-600 transition" onclick="closeModal('modal-sales-item')"><i class="w-5 h-5" data-lucide="x"></i></button>
+</div>
+<form class="p-3 sm:p-4 overflow-y-auto" id="form-sales-item" onsubmit="handleSalesItemSubmit(event)">
+<div class="space-y-3">
+<input id="sales-item-id" type="hidden"/>
+<input id="sales-item-code" type="hidden"/>
+<div>
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Nombre del Artículo *</label>
+<input class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase text-xs" id="sales-item-name" placeholder="EJ: ACEITE FUERA DE BORDA..." required="" type="text"/>
+</div>
+<div>
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Cantidad Inicial</label>
+<input class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 text-xs" id="sales-item-qty" min="0" required="" type="number" value="0"/>
+<p class="text-[8px] font-bold text-slate-400 mt-1 uppercase leading-tight">Normalmente se llena con el registro de entradas, dejar en 0 si no hay stock.</p>
+</div>
+<div>
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">Imagen</label>
+<div class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg bg-slate-50 flex items-center text-xs text-slate-500 overflow-hidden">
+<input accept="image/*" class="block w-full text-[10px] font-bold text-slate-500 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer uppercase" id="sales-item-image" type="file"/>
+</div>
+</div>
+</div>
+<div class="mt-5 pt-3 border-t border-slate-100 flex justify-end gap-2">
+<button class="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition font-bold uppercase" onclick="closeModal('modal-sales-item')" type="button">CANCELAR</button>
+<button class="px-3 py-1.5 text-xs bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition font-black shadow-sm uppercase tracking-wider" type="submit">GUARDAR</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Registrar Entrada (Ingresos) -->
+<div class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4" id="modal-sales-input">
+<div class="bg-white w-full h-full sm:h-[80vh] sm:max-h-[95vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
+<div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+<h3 class="text-base font-black text-slate-800 uppercase">ENTRADAS FORM</h3>
+<button class="text-slate-400 hover:text-slate-600 transition" onclick="closeModal('modal-sales-input')"><i class="w-5 h-5" data-lucide="x"></i></button>
+</div>
+<form class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col" id="form-sales-input" onsubmit="handleSalesInputSubmit(event)">
+<div class="space-y-3 pb-20">
+<div>
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">ARTÍCULO *</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none"><i class="w-3.5 h-3.5 text-slate-400" data-lucide="search"></i></div>
+<input class="w-full pl-7 pr-8 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" id="sales-in-search" oninput="searchSalesArticles('in')" placeholder="BUSCAR..." type="text"/>
+<button class="absolute right-0 top-0 bottom-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600" onclick="clearSearchInput('sales-in-search')" type="button"><i class="w-3.5 h-3.5" data-lucide="x"></i></button>
+<div class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs" id="sales-in-results"></div>
+</div>
+<div class="hidden mt-1.5 p-2 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-between" id="sales-in-selected">
+<span class="text-[10px] font-black uppercase truncate text-indigo-900 pr-2" id="sales-in-selected-name"></span>
+<button class="text-indigo-500 hover:text-indigo-700" onclick="clearSalesSelection('in')" type="button"><i class="w-4 h-4" data-lucide="x-circle"></i></button>
+</div>
+<input id="sales-in-article-id" required="" type="hidden"/>
+</div>
+<div>
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">CANTIDAD DE ENTRADA *</label>
+<div class="flex items-center h-8">
+<button class="w-8 h-full border border-slate-300 rounded-l-lg bg-slate-50 flex items-center justify-center font-bold text-base hover:bg-slate-100" onclick="adjustInputQty('sales-in-qty', -1)" type="button">-</button>
+<input class="w-full h-full px-2 border-y border-slate-300 focus:ring-0 outline-none text-center font-bold text-sm" id="sales-in-qty" min="1" required="" type="number" value="1"/>
+<button class="w-8 h-full border border-slate-300 rounded-r-lg bg-slate-50 flex items-center justify-center font-bold text-base hover:bg-slate-100" onclick="adjustInputQty('sales-in-qty', 1)" type="button">+</button>
+</div>
+</div>
+<div>
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">FECHA DE ENTRADA</label>
+<input class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" id="sales-in-date" required="" type="date"/>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2 shrink-0">
+<button class="px-3 py-1.5 text-xs text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-lg transition font-bold uppercase" onclick="closeModal('modal-sales-input')" type="button">CANCELAR</button>
+<button class="px-3 py-1.5 text-xs bg-indigo-900 text-white rounded-lg hover:bg-indigo-800 transition font-black shadow-sm uppercase tracking-wider" type="submit">GUARDAR</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Registrar Salida (Consumo/Venta) -->
+<div class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4" id="modal-sales-output">
+<div class="bg-white w-full h-full sm:h-[85vh] sm:max-h-[95vh] sm:max-w-md rounded-xl shadow-xl modal-enter flex flex-col">
+<div class="flex justify-between items-center p-3 sm:p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+<h3 class="text-base font-black text-slate-800 uppercase">SALIDAS FORM</h3>
+<button class="text-slate-400 hover:text-slate-600 transition" onclick="closeModal('modal-sales-output')"><i class="w-5 h-5" data-lucide="x"></i></button>
+</div>
+<form class="p-3 sm:p-4 overflow-y-auto flex-1 flex flex-col" id="form-sales-output" onsubmit="handleSalesOutputSubmit(event)">
+<div class="space-y-3 pb-20">
+<div>
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">SUPERVISOR A CARGO</label>
+<div class="px-2.5 py-1.5 bg-slate-100 border border-slate-200 rounded-lg font-black text-slate-700 text-xs uppercase flex items-center gap-1.5 shadow-inner">
+<i class="w-3.5 h-3.5 text-emerald-600" data-lucide="shield-check"></i><span id="sales-out-supervisor-display">CARGANDO...</span>
+</div>
+</div>
+<div class="pt-2 border-t border-slate-100">
+<label class="block font-bold text-slate-700 mb-1.5 uppercase text-[10px]">ARTÍCULOS A RETIRAR *</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none"><i class="w-3.5 h-3.5 text-slate-400" data-lucide="search"></i></div>
+<input class="w-full pl-7 pr-8 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 uppercase font-bold text-xs" id="sales-out-search" oninput="searchSalesArticles('out')" placeholder="BUSCAR ARTÍCULO..." type="text"/>
+<button class="absolute right-0 top-0 bottom-0 px-2.5 flex items-center text-slate-400 hover:text-slate-600" onclick="clearSearchInput('sales-out-search')" type="button"><i class="w-3.5 h-3.5" data-lucide="x"></i></button>
+<div class="hidden mt-1 border border-slate-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto absolute w-full z-20 left-0 top-full text-xs" id="sales-out-results"></div>
+</div>
+<div class="mt-3">
+<h4 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">LISTA DE SALIDA</h4>
+<div class="space-y-1.5 max-h-40 overflow-y-auto pr-1" id="selected-sales-out-list">
+<p class="text-[10px] text-slate-400 italic text-center py-1.5 bg-slate-50 rounded border border-dashed border-slate-200 uppercase font-bold">VACÍO</p>
+</div>
+</div>
+</div>
+<div class="pt-2 border-t border-slate-100">
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">PARA USO EN *</label>
+<textarea class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 uppercase text-xs resize-none" id="sales-out-uso" placeholder="DESCRIPCIÓN DEL USO..." required="" rows="2"></textarea>
+</div>
+<div>
+<label class="block font-bold text-slate-700 mb-1 uppercase text-[10px]">NOMBRE DEL QUE RECIBE *</label>
+<input class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition bg-slate-50 font-bold uppercase text-xs" id="sales-out-recibe" list="receptores-consumibles" placeholder="ESCRIBIR..." required="" type="text"/>
+<datalist id="receptores-consumibles"></datalist>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2 shrink-0">
+<button class="px-3 py-1.5 text-xs text-orange-600 border border-orange-200 hover:bg-orange-50 rounded-lg transition font-bold uppercase" onclick="closeModal('modal-sales-output')" type="button">CANCELAR</button>
+<button class="px-3 py-1.5 text-xs bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-black shadow-lg uppercase tracking-wider" type="submit">REGISTRAR SALIDA</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal Detalles Consumibles (Historial) -->
+<div class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4" id="modal-sales-history">
+<div class="bg-white w-full h-full sm:h-auto max-h-[90vh] sm:max-w-md rounded-xl shadow-2xl modal-enter flex flex-col">
+<div class="flex justify-between items-start p-4 border-b border-slate-100 bg-slate-50 rounded-t-xl">
+<div class="flex gap-3 items-start min-w-0">
+<div class="w-12 h-12 shrink-0 bg-white border border-slate-200 rounded-lg overflow-hidden flex items-center justify-center cursor-pointer shadow-sm" id="sales-history-image-container"></div>
+<div class="min-w-0">
+<h3 class="text-base font-black text-slate-800 uppercase leading-none mb-1 truncate" id="sales-history-name">DETALLES</h3>
+<p class="text-[9px] text-indigo-600 font-bold tracking-widest uppercase mb-2" id="sales-history-code"></p>
+<div class="flex gap-1.5">
+<button class="admin-only bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider transition flex items-center gap-1 shadow-sm" onclick="document.getElementById('btn-quick-in-hidden').click()"><i class="w-3 h-3" data-lucide="package-plus"></i> ENTRADA</button>
+<button class="bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider transition flex items-center gap-1 shadow-sm" onclick="document.getElementById('btn-quick-out-hidden').click()"><i class="w-3 h-3" data-lucide="package-minus"></i> SALIDA</button>
+</div>
+<button class="hidden" id="btn-quick-in-hidden"></button><button class="hidden" id="btn-quick-out-hidden"></button>
+</div>
+</div>
+<button class="text-slate-400 hover:text-slate-600 transition shrink-0 ml-2" onclick="closeModal('modal-sales-history')"><i class="w-5 h-5" data-lucide="x"></i></button>
+</div>
+<div class="p-3 border-b text-center transition-colors duration-300" id="sales-history-qty-container">
+<span class="text-[9px] font-black uppercase tracking-tighter block mb-0.5 transition-colors duration-300" id="sales-history-qty-label">STOCK DISPONIBLE</span>
+<p class="text-2xl font-black uppercase transition-colors duration-300" id="sales-history-qty"></p>
+<p class="hidden text-[9px] font-black uppercase tracking-widest mt-1 animate-pulse" id="sales-history-warning"></p>
+</div>
+<div class="flex border-b border-slate-100 bg-white shrink-0">
+<button class="admin-only flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/30 transition" id="tab-history-in" onclick="switchHistoryTab('in')">ENTRADAS</button>
+<button class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-orange-600 border-b-2 border-transparent transition" id="tab-history-out" onclick="switchHistoryTab('out')">SALIDAS</button>
+</div>
+<div class="p-3 overflow-y-auto flex-1 flex flex-col">
+<div class="block admin-only" id="view-history-in">
+<div class="flex justify-between items-center mb-2 border-b border-indigo-100 pb-1.5"><h4 class="text-[9px] text-indigo-500 font-black uppercase tracking-widest flex items-center gap-1"><i class="w-3 h-3" data-lucide="arrow-down-left"></i> ENTRADAS</h4><button class="text-[8px] bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 px-1.5 py-1 rounded font-bold uppercase flex items-center gap-1 transition shadow-sm" onclick="exportItemHistory('in')"><i class="w-2.5 h-2.5" data-lucide="download"></i> XLSX</button></div>
+<div class="space-y-2" id="sales-history-in-content"></div>
+</div>
+<div class="hidden" id="view-history-out">
+<div class="flex justify-between items-center mb-2 border-b border-orange-100 pb-1.5"><h4 class="text-[9px] text-orange-500 font-black uppercase tracking-widest flex items-center gap-1"><i class="w-3 h-3" data-lucide="arrow-up-right"></i> SALIDAS</h4><button class="text-[8px] bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200 px-1.5 py-1 rounded font-bold uppercase flex items-center gap-1 transition shadow-sm" onclick="exportItemHistory('out')"><i class="w-2.5 h-2.5" data-lucide="download"></i> XLSX</button></div>
+<div class="space-y-2" id="sales-history-out-content"></div>
+</div>
+</div>
+<div class="p-3 border-t border-slate-100 text-center bg-slate-50 rounded-b-xl">
+<button class="px-5 py-1.5 bg-slate-800 text-white text-xs font-black rounded-lg uppercase tracking-widest shadow-sm" onclick="closeModal('modal-sales-history')">CERRAR</button>
+</div>
+</div>
+</div>
+<!-- Confirmar Acción -->
+<div class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm p-4 text-xs" id="modal-confirm">
+<div class="bg-white rounded-xl shadow-xl w-full max-w-xs modal-enter flex flex-col border border-slate-200">
+<div class="p-5 text-center">
+<div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3"><i class="w-6 h-6 text-red-600" data-lucide="alert-triangle"></i></div>
+<h3 class="text-base font-black text-slate-800 mb-1.5 uppercase" id="confirm-title">¿Eliminar?</h3>
+<p class="text-[9px] text-slate-500 mb-5 uppercase font-bold leading-tight" id="confirm-desc">Esta acción no se puede deshacer.</p>
+<div class="flex gap-2 justify-center">
+<button class="px-3 py-1.5 text-xs text-slate-600 bg-slate-100 rounded-lg transition font-bold w-full uppercase" onclick="closeModal('modal-confirm')">NO</button>
+<button class="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-black shadow-sm w-full uppercase" id="confirm-action-btn">SÍ, BORRAR</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Visor de Imagen -->
+<div class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[70] backdrop-blur-md p-4" id="modal-image-viewer" onclick="closeImageViewer()">
+<button class="absolute top-4 right-4 text-white/60 hover:text-white p-2" onclick="closeImageViewer()"><i class="w-8 h-8" data-lucide="x"></i></button>
+<img alt="Vista" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl" id="full-screen-image" onclick="event.stopPropagation()" src=""/>
+</div>
+<div class="fixed bottom-4 right-4 flex flex-col gap-2 z-[60] items-end pointer-events-none" id="toast-container"></div>
+<script>
         const supabaseUrl = 'https://vultocxxccxzyinechkc.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bHRvY3h4Y2N4enlpbmVjaGtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3OTUxNTQsImV4cCI6MjA5MjM3MTE1NH0.XybbNTEAvXmc-3GRqRJ1NcRpxK42CP7FbCsn5o-hUdg';
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -719,8 +1218,45 @@
             setupDayFilter();
             setCurrentDateInputs();
             setupSearchListeners();
+            setupKeyboardFriendlyForms();
             checkAuth();
         });
+
+        function setupKeyboardFriendlyForms() {
+            const root = document.documentElement;
+            const updateViewportHeight = () => {
+                const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                root.style.setProperty('--app-vh', `${height}px`);
+            };
+            updateViewportHeight();
+            window.addEventListener('resize', updateViewportHeight, { passive: true });
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', updateViewportHeight, { passive: true });
+                window.visualViewport.addEventListener('scroll', updateViewportHeight, { passive: true });
+            }
+
+            const editableSelector = 'input:not([type="hidden"]), textarea, select';
+            document.addEventListener('focusin', (event) => {
+                const target = event.target;
+                if (!target || !target.matches || !target.matches(editableSelector)) return;
+                document.body.classList.add('keyboard-active');
+                setTimeout(() => {
+                    try {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                    } catch (e) {
+                        target.scrollIntoView(false);
+                    }
+                }, 260);
+            });
+            document.addEventListener('focusout', () => {
+                setTimeout(() => {
+                    if (!document.activeElement || !document.activeElement.matches || !document.activeElement.matches(editableSelector)) {
+                        document.body.classList.remove('keyboard-active');
+                    }
+                }, 180);
+            });
+        }
+
 
         function generateID(prefix = 'ID') {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -1019,13 +1555,32 @@
         }
 
         function switchView(view) {
-            ['home', 'inventory', 'loans', 'sales', 'reports', 'users', 'received'].forEach(v => {
-                const el = document.getElementById(`view-${v}`); if(el) el.classList.toggle('hidden', v !== view);
-                const tab = document.getElementById(`tab-${v}`); if(tab) tab.classList.toggle('bg-slate-700', v === view);
+            const allViews = ['home', 'tools-menu', 'consumibles-menu', 'users-menu', 'inventory', 'loans', 'sales', 'reports', 'users', 'received'];
+            const operationViews = ['home', 'tools-menu', 'consumibles-menu', 'users-menu', 'inventory', 'loans', 'sales', 'received'];
+            const menuChildViews = ['tools-menu', 'consumibles-menu', 'users-menu'];
+            const mainContent = document.getElementById('main-content');
+
+            allViews.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if(el) el.classList.toggle('hidden', v !== view);
+
+                const tab = document.getElementById(`tab-${v}`);
+                if(tab) {
+                    const activeTab = v === view || (v === 'home' && menuChildViews.includes(view));
+                    tab.classList.toggle('bg-slate-700', activeTab);
+                    tab.classList.toggle('nav-active', activeTab);
+                }
             });
+
+            if(mainContent) {
+                mainContent.classList.toggle('operation-mode', operationViews.includes(view));
+                mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
             if(view === 'reports') renderReports();
             if(view === 'received') { receivedDateOffset = 0; renderReceived(); }
             applyRoleRestrictions();
+            if(window.lucide) lucide.createIcons();
         }
 
         function applyRoleRestrictions() {
