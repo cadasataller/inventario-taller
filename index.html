@@ -10,6 +10,7 @@
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%230f172a'/%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" rel="apple-touch-icon"/>
 <meta content="Herramientas" name="apple-mobile-web-app-title"/>
 <meta content="#0f172a" name="theme-color"/>
+<meta content="any" name="screen-orientation"/>
 <meta content="yes" name="mobile-web-app-capable"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
@@ -650,6 +651,242 @@
             #sales-grid,
             #loans-list-container {
                 grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+        }
+
+
+
+        /* ==========================================================
+           AJUSTE TABLET HORIZONTAL / LANDSCAPE
+           Permite usar la PWA cómodamente en iPad/tablet acostada.
+           No bloquea la orientación: el manifest queda en orientation:any.
+        ========================================================== */
+        @media (orientation: landscape) and (min-width: 700px) and (max-width: 1400px) {
+            html,
+            body,
+            #app-container {
+                width: 100vw !important;
+                height: 100dvh !important;
+                min-height: 100dvh !important;
+                overflow: hidden !important;
+            }
+
+            body {
+                -webkit-text-size-adjust: 100%;
+                text-size-adjust: 100%;
+            }
+
+            .app-topbar {
+                min-height: 54px !important;
+                padding: .5rem .9rem !important;
+            }
+
+            .brand-mark {
+                width: 38px !important;
+                height: 38px !important;
+                border-radius: .9rem !important;
+            }
+
+            .app-topbar h1,
+            .app-topbar .desktop-title {
+                display: block !important;
+                font-size: .86rem !important;
+                line-height: 1 !important;
+            }
+
+            #main-content {
+                height: calc(100dvh - 54px) !important;
+                min-height: 0 !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch;
+                padding: .55rem .65rem !important;
+            }
+
+            #view-home,
+            #view-tools-menu,
+            #view-consumibles-menu,
+            #view-users-menu,
+            #view-inventory,
+            #view-loans,
+            #view-received,
+            #view-sales,
+            #view-reports,
+            #view-users {
+                width: 100% !important;
+                max-width: 1366px !important;
+                padding: .45rem .65rem !important;
+            }
+
+            .unified-hero {
+                padding: .8rem 1rem !important;
+                border-radius: 1.1rem !important;
+                margin-bottom: .65rem !important;
+            }
+
+            .unified-hero h2 {
+                font-size: 1.35rem !important;
+                line-height: 1.05 !important;
+            }
+
+            .unified-hero p {
+                font-size: .72rem !important;
+                line-height: 1.25 !important;
+                margin-top: .25rem !important;
+            }
+
+            #view-home .grid,
+            #view-tools-menu .grid,
+            #view-consumibles-menu .grid,
+            #view-users-menu .grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: .75rem !important;
+            }
+
+            #view-users-menu .grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+
+            .menu-launch-card .p-4,
+            .menu-launch-card .sm\:p-5,
+            .menu-option-window .p-4,
+            .menu-option-window .sm\:p-5 {
+                padding: .8rem !important;
+            }
+
+            .menu-action-tile {
+                min-height: 86px !important;
+                padding: .75rem !important;
+                border-radius: 1rem !important;
+            }
+
+            .menu-action-tile span:first-of-type {
+                font-size: .68rem !important;
+            }
+
+            .view-return-row {
+                margin-bottom: .45rem !important;
+            }
+
+            .view-back-btn,
+            button,
+            select,
+            input {
+                min-height: 36px;
+            }
+
+            .view-back-btn {
+                padding: .48rem .75rem !important;
+                font-size: 9px !important;
+                border-radius: .75rem !important;
+            }
+
+            #view-inventory > .sticky,
+            #view-loans > .sticky,
+            #view-sales > .sticky,
+            .operation-mode #view-received > .mb-5,
+            #view-reports .mb-5 {
+                padding: .7rem !important;
+                margin-bottom: .6rem !important;
+                border-radius: 1rem !important;
+            }
+
+            #inventory-grid,
+            #sales-grid,
+            #loans-list-container {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: .65rem !important;
+            }
+
+            #inventory-container,
+            #sales-container,
+            #loans-list-container {
+                padding: .7rem !important;
+            }
+
+            #view-received .bg-white.rounded-xl,
+            #view-reports .bg-white.rounded-xl,
+            #view-users .bg-white.rounded-2xl {
+                max-height: calc(100dvh - 165px) !important;
+                overflow: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #view-received table,
+            #view-reports table,
+            #view-users table {
+                min-width: 900px !important;
+            }
+
+            #view-received th,
+            #view-received td,
+            #view-reports th,
+            #view-reports td,
+            #view-users td {
+                padding: .58rem .65rem !important;
+                vertical-align: middle !important;
+            }
+
+            #received-date-display {
+                min-width: 86px !important;
+            }
+
+            div[id^="modal-"] {
+                align-items: center !important;
+                justify-content: center !important;
+                padding: .5rem !important;
+                overflow-y: auto !important;
+            }
+
+            div[id^="modal-"] > div {
+                width: min(94vw, 820px) !important;
+                max-width: 820px !important;
+                max-height: calc(100dvh - 1rem) !important;
+                border-radius: 1rem !important;
+            }
+
+            div[id^="modal-"] form,
+            div[id^="modal-"] .overflow-y-auto {
+                max-height: calc(100dvh - 7rem) !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        @media (orientation: landscape) and (min-width: 1050px) and (max-width: 1400px) {
+            #inventory-grid,
+            #sales-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            }
+
+            #view-received table,
+            #view-reports table,
+            #view-users table {
+                min-width: 100% !important;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 620px) {
+            .unified-hero {
+                display: none !important;
+            }
+
+            .app-topbar {
+                min-height: 48px !important;
+                padding-top: .35rem !important;
+                padding-bottom: .35rem !important;
+            }
+
+            #main-content {
+                height: calc(100dvh - 48px) !important;
+            }
+
+            .menu-action-tile {
+                min-height: 74px !important;
+            }
+
+            div[id^="modal-"] > div {
+                max-height: calc(100dvh - .5rem) !important;
             }
         }
 
@@ -1429,7 +1666,22 @@
             setCurrentDateInputs();
             setupSearchListeners();
             setupKeyboardFriendlyForms();
-            setupPWAInstall();
+    
+
+        function unlockTabletOrientation() {
+            try {
+                if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+                    screen.orientation.unlock();
+                }
+            } catch (e) {
+                // Algunos navegadores no permiten desbloquear orientación desde JS.
+            }
+        }
+
+        window.addEventListener('load', unlockTabletOrientation);
+        document.addEventListener('visibilitychange', unlockTabletOrientation);
+
+        setupPWAInstall();
             checkAuth();
         });
 
