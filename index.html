@@ -14,8 +14,8 @@
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Entrega de Herramientas" name="application-name"/>
-<link rel="manifest" href="/inventario-taller/manifest.webmanifest">
-<link rel="apple-touch-icon" href="/inventario-taller/icon-192.png">
+<link href="/inventario-taller/manifest.webmanifest" rel="manifest"/>
+<link href="/inventario-taller/icon-192.png" rel="apple-touch-icon"/>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -451,6 +451,208 @@
         }
 
 
+
+
+        /* ==========================================================
+           AJUSTE RESPONSIVE PARA TABLET / iPad
+           Mejora lectura, columnas, tablas, modales y botones táctiles.
+        ========================================================== */
+        @supports (height: 100dvh) {
+            body,
+            #app-container {
+                height: 100dvh !important;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 1180px) {
+            body {
+                font-size: 14px;
+                overflow: hidden;
+            }
+
+            .app-topbar {
+                padding: .75rem 1rem !important;
+            }
+
+            .brand-mark {
+                width: 44px !important;
+                height: 44px !important;
+                border-radius: 1rem !important;
+            }
+
+            #main-content {
+                width: 100%;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+                padding: .75rem !important;
+            }
+
+            #view-home,
+            #view-tools-menu,
+            #view-consumibles-menu,
+            #view-users-menu,
+            #view-inventory,
+            #view-loans,
+            #view-received,
+            #view-sales,
+            #view-reports,
+            #view-users {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding-left: .75rem !important;
+                padding-right: .75rem !important;
+            }
+
+            .unified-hero {
+                padding: 1.15rem !important;
+                border-radius: 1.35rem !important;
+                margin-bottom: .85rem !important;
+            }
+
+            .unified-hero h2 {
+                font-size: 1.55rem !important;
+                line-height: 1.05 !important;
+            }
+
+            .menu-launch-card,
+            .menu-option-window > div,
+            .operation-mode #inventory-container,
+            .operation-mode #sales-container,
+            .operation-mode #loans-list-container,
+            .operation-mode #view-received .bg-white.rounded-xl,
+            #view-reports .bg-white.rounded-xl,
+            #view-users .bg-white.rounded-2xl {
+                border-radius: 1.25rem !important;
+            }
+
+            .menu-action-tile {
+                min-height: 108px !important;
+                padding: 1rem !important;
+            }
+
+            .view-back-btn,
+            button,
+            select,
+            input {
+                min-height: 40px;
+            }
+
+            .view-back-btn {
+                padding: .6rem .9rem !important;
+                font-size: 10px !important;
+            }
+
+            #inventory-grid,
+            #sales-grid,
+            #loans-list-container {
+                gap: .8rem !important;
+            }
+
+            #view-inventory > .sticky,
+            #view-loans > .sticky,
+            #view-sales > .sticky,
+            .operation-mode #view-received > .mb-5 {
+                border-radius: 1.25rem !important;
+                padding: .9rem !important;
+            }
+
+            #view-received .mb-5,
+            #view-reports .mb-5 {
+                align-items: center !important;
+            }
+
+            #view-received .overflow-x-auto,
+            #view-reports .overflow-x-auto,
+            #view-users .overflow-x-auto {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #view-received table {
+                min-width: 980px;
+            }
+
+            #view-received th,
+            #view-received td,
+            #view-reports th,
+            #view-reports td {
+                padding: .75rem .7rem !important;
+                vertical-align: middle;
+            }
+
+            #view-received td button,
+            #view-reports td button {
+                min-height: 34px;
+            }
+
+            #received-date-display {
+                min-width: 92px !important;
+            }
+
+            div[id^="modal-"] {
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 1rem !important;
+            }
+
+            div[id^="modal-"] > div {
+                width: min(94vw, 720px) !important;
+                max-height: calc(100dvh - 2rem) !important;
+            }
+
+            #modal-loan > div,
+            #modal-sales-output > div,
+            #modal-sales-input > div,
+            #modal-tool > div,
+            #modal-sales-item > div {
+                max-width: 680px !important;
+            }
+
+            div[id^="modal-"] form,
+            div[id^="modal-"] .overflow-y-auto {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 900px) {
+            .app-topbar .desktop-title {
+                display: block !important;
+                font-size: .86rem !important;
+                max-width: 260px;
+            }
+
+            #view-home .grid,
+            #view-tools-menu .grid,
+            #view-consumibles-menu .grid,
+            #view-users-menu .grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+
+            #view-consumibles-menu .grid button:last-child,
+            #view-users-menu .grid button:last-child {
+                grid-column: span 2;
+            }
+
+            #inventory-grid,
+            #sales-grid,
+            #loans-list-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+        }
+
+        @media (min-width: 901px) and (max-width: 1180px) {
+            #view-home .grid,
+            #view-consumibles-menu .grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+
+            #inventory-grid,
+            #sales-grid,
+            #loans-list-container {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+        }
+
         /* Ajuste solicitado: quitar el botón MENÚ visible y dejar el área superior limpia */
         .app-bottom-menu {
             display: none !important;
@@ -792,6 +994,7 @@
 <th class="p-3">CONSUMIBLE</th>
 <th class="p-3">USO</th>
 <th class="p-3">RESPONSABLE</th>
+<th class="p-3 text-right admin-only w-[150px]">ACCIONES</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-100 font-bold text-slate-700 uppercase" id="received-table-body"></tbody>
@@ -1276,10 +1479,8 @@
             }
 
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/inventario-taller/sw.js', {
-                    scope: '/inventario-taller/'
-                })
-                    .then((registration) => console.log('PWA lista para instalar:', registration.scope))
+                navigator.serviceWorker.register('/inventario-taller/sw.js', { scope: '/inventario-taller/' })
+                    .then(() => console.log('PWA lista para instalar.'))
                     .catch(err => console.warn('No se pudo registrar el Service Worker:', err));
             });
         }
@@ -1852,6 +2053,9 @@
         async function renderReceived() {
             const tbody = document.getElementById('received-table-body');
             if(!tbody) return;
+
+            const isAdmin = String(currentUserRole || '').toLowerCase() === 'admin';
+            const colspan = isAdmin ? 6 : 5;
             
             const targetDate = new Date();
             targetDate.setDate(targetDate.getDate() + receivedDateOffset);
@@ -1864,16 +2068,27 @@
                 else displayEl.innerText = targetDateStr;
             }
 
-            tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">CARGANDO SALIDAS DE CONSUMIBLES...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">CARGANDO SALIDAS DE CONSUMIBLES...</td></tr>`;
 
             const filtered = await getConsumableOutputsByDate(targetDate);
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">NO HAY SALIDAS DE CONSUMIBLES EL ${receivedDateOffset === 0 ? 'DÍA DE HOY' : targetDateStr}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">NO HAY SALIDAS DE CONSUMIBLES EL ${receivedDateOffset === 0 ? 'DÍA DE HOY' : targetDateStr}.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = filtered.map(s => {
+                const actionTd = isAdmin ? `
+                    <td class="p-3 text-right whitespace-nowrap">
+                        <div class="flex justify-end gap-2">
+                            <button onclick="editSalesOutput('${s.id}')" class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 transition text-[9px] font-black uppercase" title="Editar salida">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Editar
+                            </button>
+                            <button onclick="confirmDeletion('${s.id}', 'salesOutput')" class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-100 hover:bg-red-100 transition text-[9px] font-black uppercase" title="Eliminar salida">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar
+                            </button>
+                        </div>
+                    </td>` : '';
                 return `
                 <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                     <td class="p-3 whitespace-nowrap text-slate-500">${s.fecha || targetDateStr}</td>
@@ -1883,6 +2098,7 @@
                     </td>
                     <td class="p-3 text-[10px] text-slate-600 font-bold">${s.para_uso_en || 'N/A'}</td>
                     <td class="p-3 text-[10px] text-slate-500 font-black">${s.supervisor || 'N/A'}</td>
+                    ${actionTd}
                 </tr>
                 `;
             }).join('');
@@ -2094,10 +2310,44 @@
             const btn = document.querySelector('#form-sales-output button[type="submit"]'); btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> GUARDANDO...'; btn.disabled = true; lucide.createIcons();
             try {
                 if (currentEditingSalesOutputId) {
-                    const s = selectedSalesOutArticles[0]; const oldOut = salidasVenta.find(x => x.id === currentEditingSalesOutputId); const article = articulosVenta.find(a => a.id === s.id); const diff = s.outQty - oldOut.cantidad;
-                    if(oldOut) { oldOut.cantidad = s.outQty; oldOut.para_uso_en = uso; oldOut.recibe = recibe; }
-                    if(article) article.cantidad -= diff;
-                    await Promise.all([ supabaseClient.from('salidas_articulos').update({ cantidad: s.outQty, para_uso_en: uso, recibe: recibe }).eq('id', currentEditingSalesOutputId), supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad - diff }).eq('id', article.id) ]);
+                    const s = selectedSalesOutArticles[0];
+                    const oldOut = salidasVenta.find(x => x.id === currentEditingSalesOutputId);
+                    if(!oldOut) throw new Error('No se encontró la salida original.');
+
+                    const oldArticle = articulosVenta.find(a => a.id === oldOut.articulo_id);
+                    const newArticle = articulosVenta.find(a => a.id === s.id);
+                    if(!newArticle) throw new Error('No se encontró el artículo seleccionado.');
+
+                    const updates = [
+                        supabaseClient
+                            .from('salidas_articulos')
+                            .update({ articulo_id: s.id, nombre_articulo: s.nombre, cantidad: s.outQty, para_uso_en: uso, recibe: recibe })
+                            .eq('id', currentEditingSalesOutputId)
+                    ];
+
+                    if (oldArticle && oldArticle.id === newArticle.id) {
+                        const nuevaCantidad = Number(oldArticle.cantidad || 0) + Number(oldOut.cantidad || 0) - Number(s.outQty || 0);
+                        if (nuevaCantidad < 0) { showToast('STOCK INSUFICIENTE', 'error'); return; }
+                        oldArticle.cantidad = nuevaCantidad;
+                        updates.push(supabaseClient.from('articulos_venta').update({ cantidad: nuevaCantidad }).eq('id', oldArticle.id));
+                    } else {
+                        if (oldArticle) {
+                            oldArticle.cantidad = Number(oldArticle.cantidad || 0) + Number(oldOut.cantidad || 0);
+                            updates.push(supabaseClient.from('articulos_venta').update({ cantidad: oldArticle.cantidad }).eq('id', oldArticle.id));
+                        }
+                        const nuevaCantidad = Number(newArticle.cantidad || 0) - Number(s.outQty || 0);
+                        if (nuevaCantidad < 0) { showToast('STOCK INSUFICIENTE', 'error'); return; }
+                        newArticle.cantidad = nuevaCantidad;
+                        updates.push(supabaseClient.from('articulos_venta').update({ cantidad: nuevaCantidad }).eq('id', newArticle.id));
+                    }
+
+                    oldOut.articulo_id = s.id;
+                    oldOut.nombre_articulo = s.nombre;
+                    oldOut.cantidad = s.outQty;
+                    oldOut.para_uso_en = uso;
+                    oldOut.recibe = recibe;
+
+                    await Promise.all(updates);
                 } else {
                     const inserts = []; const updates = [];
                     for(const s of selectedSalesOutArticles) {
@@ -2396,3 +2646,4 @@
     </script>
 </body>
 </html>
+
