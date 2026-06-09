@@ -3,10 +3,10 @@
   "short_name": "Herramientas",
   "description": "Sistema de entrega de herramientas, consumibles e inventario",
   "id": "/inventario-taller/",
-  "start_url": "/inventario-taller/index.html",
+  "start_url": "/inventario-taller/index.html?v=landscape12",
   "scope": "/inventario-taller/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#f1f5f9",
   "theme_color": "#0f172a",
   "lang": "es",
@@ -23,5 +23,9 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
   ]
 }
