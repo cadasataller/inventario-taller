@@ -10,6 +10,11 @@
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%230f172a'/%3E%3Cpath d='M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" rel="apple-touch-icon"/>
 <meta content="Herramientas" name="apple-mobile-web-app-title"/>
 <meta content="#0f172a" name="theme-color"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="Entrega de Herramientas" name="application-name"/>
+<link href="manifest.webmanifest" rel="manifest"/>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -781,10 +786,12 @@
 <table class="w-full text-left text-[11px] border-collapse">
 <thead>
 <tr class="bg-slate-50 font-black text-slate-400 uppercase tracking-tighter border-b border-slate-200">
-<th class="p-3">FECHA Y HORA</th>
-<th class="p-3">SOLICITANTE</th>
-<th class="p-3">HERRAMIENTAS</th>
-<th class="p-3">ENTREGÓ</th>
+<th class="p-3">FECHA</th>
+<th class="p-3">RECIBE</th>
+<th class="p-3">CONSUMIBLE</th>
+<th class="p-3">USO</th>
+<th class="p-3">RESPONSABLE</th>
+<th class="p-3 text-right admin-only w-24">ACCIONES</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-100 font-bold text-slate-700 uppercase" id="received-table-body"></tbody>
@@ -1219,6 +1226,7 @@
             setCurrentDateInputs();
             setupSearchListeners();
             setupKeyboardFriendlyForms();
+            setupPWAInstall();
             checkAuth();
         });
 
@@ -1254,6 +1262,23 @@
                         document.body.classList.remove('keyboard-active');
                     }
                 }, 180);
+            });
+        }
+
+
+        function setupPWAInstall() {
+            if (!('serviceWorker' in navigator)) return;
+
+            const canRegister = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+            if (!canRegister) {
+                console.warn('PWA: el Service Worker requiere HTTPS o localhost.');
+                return;
+            }
+
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(() => console.log('PWA lista para instalar.'))
+                    .catch(err => console.warn('No se pudo registrar el Service Worker:', err));
             });
         }
 
@@ -1583,10 +1608,33 @@
             if(window.lucide) lucide.createIcons();
         }
 
+        function normalizeRole(role) {
+            return String(role || '')
+                .trim()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+        }
+
+        function isCurrentAdmin() {
+            const role = normalizeRole(currentUserRole);
+            return ['admin', 'administrador', 'administrator', 'administracion'].includes(role);
+        }
+
+        function isCurrentSupervisor() {
+            const role = normalizeRole(currentUserRole);
+            return ['supervisor'].includes(role);
+        }
+
+        function isCurrentUsuario() {
+            const role = normalizeRole(currentUserRole);
+            return ['usuario', 'user'].includes(role);
+        }
+
         function applyRoleRestrictions() {
-            const isAdmin = currentUserRole === 'admin';
-            const isSupervisor = currentUserRole === 'supervisor';
-            const isUsuario = currentUserRole === 'usuario';
+            const isAdmin = isCurrentAdmin();
+            const isSupervisor = isCurrentSupervisor();
+            const isUsuario = isCurrentUsuario();
             document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? '' : 'none');
             document.querySelectorAll('.admin-supervisor').forEach(el => el.style.display = (isAdmin || isSupervisor) ? '' : 'none');
             document.querySelectorAll('.hide-from-supervisor').forEach(el => el.style.display = isSupervisor ? 'none' : '');
@@ -1615,7 +1663,7 @@
 
         function renderReports() {
             const tbody = document.getElementById('reports-table-body');
-            const isAdmin = currentUserRole === 'admin';
+            const isAdmin = isCurrentAdmin();
             if(!tbody) return;
 
             if (!hasGeneratedReport) {
@@ -1635,7 +1683,7 @@
                 if (!s.fecha) return false;
                 
                 // Filtro de seguridad: El supervisor solo puede ver sus propios registros
-                if (currentUserRole === 'supervisor' && s.supervisor !== currentUserName.toUpperCase()) {
+                if (isCurrentSupervisor() && s.supervisor !== currentUserName.toUpperCase()) {
                     return false;
                 }
 
@@ -1746,7 +1794,7 @@
             
             currentInventorySearchResults.forEach(tool => {
                 const avail = tool.cantidad > 0;
-                const adminActions = currentUserRole !== 'supervisor' ? `<div class="flex gap-1 shrink-0 ml-1" onclick="event.stopPropagation()"><button onclick="editTool('${tool.id_articulo}')" class="p-1 text-slate-300 hover:text-blue-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${tool.id_articulo}', 'tool')" class="p-1 text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>` : '';
+                const adminActions = !isCurrentSupervisor() ? `<div class="flex gap-1 shrink-0 ml-1" onclick="event.stopPropagation()"><button onclick="editTool('${tool.id_articulo}')" class="p-1 text-slate-300 hover:text-blue-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${tool.id_articulo}', 'tool')" class="p-1 text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>` : '';
                 const card = document.createElement('div');
                 card.className = "tool-card bg-white rounded-xl border border-slate-200 overflow-hidden flex items-center pr-2 shadow-sm transition cursor-pointer p-1.5";
                 card.onclick = () => openToolHistoryModal(tool.id_articulo);
@@ -1774,7 +1822,7 @@
                 div.className = "bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full";
                 div.innerHTML = `<div class="px-4 py-3 bg-[#0f172a] text-white flex justify-between items-center relative overflow-hidden">${hasOverdue ? `<div class="absolute inset-0 bg-red-600 animate-alert flex items-center justify-center pointer-events-none opacity-20"></div>` : ''}<div class="min-w-0 flex-1 pr-2 z-10"><h3 class="text-sm font-black uppercase tracking-wider truncate">${name}</h3><div class="flex items-center gap-2"><p class="text-xs text-slate-400 font-bold uppercase text-[9px]">${items.length} PENDIENTE(S)</p></div></div><div class="bg-blue-600/20 text-blue-400 p-1.5 rounded-lg shrink-0 z-10"><i data-lucide="user" class="w-5 h-5"></i></div></div><div class="divide-y divide-slate-100">${items.map(l => {
                     const days = getElapsedDays(l.timestamp);
-                    const adminActions = currentUserRole !== 'supervisor' ? `<button onclick="editLoan('${l.id}')" class="p-2 text-slate-400 hover:text-blue-600 transition bg-slate-50 rounded-lg"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${l.id}', 'loan')" class="p-2 text-slate-300 hover:text-red-500 transition bg-slate-50 rounded-lg"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : '';
+                    const adminActions = !isCurrentSupervisor() ? `<button onclick="editLoan('${l.id}')" class="p-2 text-slate-400 hover:text-blue-600 transition bg-slate-50 rounded-lg"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${l.id}', 'loan')" class="p-2 text-slate-300 hover:text-red-500 transition bg-slate-50 rounded-lg"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : '';
                     return `<div class="p-3 bg-white relative"><div class="flex justify-between items-center mb-3"><div class="flex flex-col"><span class="text-[9px] text-slate-400 font-black uppercase mb-0.5 tracking-widest">FECHA Y HORA</span><span class="text-xs text-slate-800 font-extrabold uppercase">${l.date}</span><span class="text-[9px] ${days >= 4 ? 'text-red-600 font-black' : 'text-emerald-600'} mt-1 uppercase">${days} DÍAS</span></div><span class="bg-red-500 text-white px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider shadow-sm">PENDIENTE</span></div><div class="text-[10px] text-slate-600 mb-3 flex items-center gap-1.5 font-bold uppercase">ENTREGÓ: <span class="text-slate-900">${l.deliverer}</span></div><div class="flex flex-col gap-1.5 mb-3 uppercase">${l.tools.map(t => { const inv = inventory.find(i => i.id_articulo === t.id_articulo); const imgUrl = (inv && inv.imagen_url) ? inv.imagen_url : t.imagen_url; return `<div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200/50"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden flex items-center justify-center shrink-0 cursor-pointer" onclick="${imgUrl ? `openImageViewer('${imgUrl}')` : ''}">${imgUrl ? `<img src="${imgUrl}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="image" class="text-slate-300 w-4 h-4"></i>'}</div><div class="min-w-0 flex-1 uppercase"><p class="text-xs font-black text-slate-800 truncate">${t.nombre}</p><p class="text-[9px] text-slate-500 font-bold uppercase">${t.id_articulo} | CANT: ${t.borrowQty}</p></div><button onclick="returnSingleTool('${l.id}', '${t.id_articulo}')" class="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition shrink-0" title="Recibir artículo individual"><i data-lucide="check-circle" class="w-4 h-4"></i></button></div>`; }).join('')}</div><div class="flex gap-2 mt-3 pt-3 border-t border-slate-100"><button onclick="returnLoan('${l.id}')" class="flex-1 bg-[#0284c7] hover:bg-sky-700 text-white py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition flex items-center justify-center gap-1.5 shadow-md active:scale-95"><i data-lucide="check" class="w-3.5 h-3.5"></i> RECIBIR</button>${adminActions}</div></div>`;
                 }).join('')}</div>`;
                 container.appendChild(div);
@@ -1785,13 +1833,52 @@
         let receivedDateOffset = 0;
         function changeReceivedDate(delta) { receivedDateOffset += delta; renderReceived(); }
 
-        function renderReceived() {
+        function getSalesDateVariants(date) {
+            const d = String(date.getDate());
+            const m = String(date.getMonth() + 1);
+            const y = String(date.getFullYear());
+            return [...new Set([`${d}/${m}/${y}`, `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`])];
+        }
+
+        function salesDateMatches(value, date) {
+            if (!value) return false;
+            return getSalesDateVariants(date).includes(String(value).trim());
+        }
+
+        async function getConsumableOutputsByDate(date) {
+            const variants = getSalesDateVariants(date);
+            try {
+                const { data, error } = await supabaseClient
+                    .from('salidas_articulos')
+                    .select('*')
+                    .in('fecha', variants)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                (data || []).forEach(record => {
+                    const idx = salidasVenta.findIndex(x => x.id === record.id);
+                    if (idx !== -1) salidasVenta[idx] = record;
+                    else salidasVenta.unshift(record);
+                });
+
+                saveLocalData();
+                return data || [];
+            } catch (err) {
+                console.error('Error cargando salidas del día:', err);
+                return salidasVenta.filter(s => salesDateMatches(s.fecha, date));
+            }
+        }
+
+        async function renderReceived() {
             const tbody = document.getElementById('received-table-body');
             if(!tbody) return;
+            const isAdmin = isCurrentAdmin();
+            const colSpan = isAdmin ? 6 : 5;
             
             const targetDate = new Date();
             targetDate.setDate(targetDate.getDate() + receivedDateOffset);
-            const targetDateStr = targetDate.toLocaleDateString('es-ES');
+            const targetDateStr = getSalesDateVariants(targetDate)[1];
 
             const displayEl = document.getElementById('received-date-display');
             if (displayEl) {
@@ -1799,26 +1886,43 @@
                 else if (receivedDateOffset === -1) displayEl.innerText = 'AYER';
                 else displayEl.innerText = targetDateStr;
             }
-            
-            const filtered = loans.filter(l => l.status === 'devuelto' && l.date.includes(targetDateStr));
+
+            tbody.innerHTML = `<tr><td colspan="${colSpan}" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">CARGANDO SALIDAS DE CONSUMIBLES...</td></tr>`;
+
+            const filtered = await getConsumableOutputsByDate(targetDate);
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">NO HAY HERRAMIENTAS RECIBIDAS EL ${receivedDateOffset === 0 ? 'DÍA DE HOY' : targetDateStr}.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colSpan}" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">NO HAY SALIDAS DE CONSUMIBLES EL ${receivedDateOffset === 0 ? 'DÍA DE HOY' : targetDateStr}.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = filtered.map(l => {
-                const toolsStr = l.tools.map(t => `<div class="bg-slate-50 p-1 mb-1 rounded border border-slate-100">${t.nombre} <span class="text-emerald-600 font-black tracking-widest text-[8px]">(CANT: ${t.borrowQty})</span></div>`).join('');
+            tbody.innerHTML = filtered.map(s => {
+                const adminActions = isAdmin ? `
+                    <td class="p-3 text-right whitespace-nowrap">
+                        <div class="inline-flex items-center gap-1 justify-end">
+                            <button type="button" onclick="editSalesOutput('${s.id}')" class="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition" title="Editar salida">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button type="button" onclick="confirmDeletion('${s.id}', 'salesOutput')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Eliminar salida">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </td>` : '';
                 return `
                 <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                    <td class="p-3 whitespace-nowrap text-slate-500">${l.date}</td>
-                    <td class="p-3 font-black">${l.applicant}</td>
-                    <td class="p-3 text-[9px]">${toolsStr}</td>
-                    <td class="p-3">${l.deliverer}</td>
+                    <td class="p-3 whitespace-nowrap text-slate-500">${s.fecha || targetDateStr}</td>
+                    <td class="p-3 font-black">${s.recibe || 'N/A'}</td>
+                    <td class="p-3 text-[10px]">
+                        <div class="bg-orange-50 p-1.5 rounded border border-orange-100 font-black text-slate-800">${s.nombre_articulo || 'SIN ARTÍCULO'} <span class="text-orange-600 font-black tracking-widest text-[8px]">(CANT: ${s.cantidad || 0})</span></div>
+                    </td>
+                    <td class="p-3 text-[10px] text-slate-600 font-bold">${s.para_uso_en || 'N/A'}</td>
+                    <td class="p-3 text-[10px] text-slate-500 font-black">${s.supervisor || 'N/A'}</td>
+                    ${adminActions}
                 </tr>
                 `;
             }).join('');
             lucide.createIcons();
+            applyRoleRestrictions();
         }
 
         function renderSalesCatalog() {
@@ -1839,7 +1943,7 @@
             emptyState.classList.add('hidden');
             
             currentSalesSearchResults.forEach(item => {
-                const adminActions = currentUserRole === 'admin' ? `<div class="flex gap-1 shrink-0 ml-1" onclick="event.stopPropagation()"><button onclick="editSalesItem('${item.id}')" class="p-1 text-slate-300 hover:text-indigo-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${item.id}', 'salesItem')" class="p-1 text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>` : '';
+                const adminActions = isCurrentAdmin() ? `<div class="flex gap-1 shrink-0 ml-1" onclick="event.stopPropagation()"><button onclick="editSalesItem('${item.id}')" class="p-1 text-slate-300 hover:text-indigo-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button onclick="confirmDeletion('${item.id}', 'salesItem')" class="p-1 text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>` : '';
                 const card = document.createElement('div');
                 card.className = "tool-card bg-white rounded-xl border border-slate-200 p-1.5 flex items-center pr-2 shadow-sm cursor-pointer";
                 card.onclick = () => openSalesHistoryModal(item.id);
@@ -1934,9 +2038,10 @@
                 if(type === 'out') {
                     res.innerHTML = match.map(t => {
                         const ex = selectedSalesOutArticles.find(s => s.id === t.id);
-                        return `<div class="p-2 border-b ${t.cantidad > 0 ? (ex ? 'bg-orange-50 hover:bg-orange-100' : 'hover:bg-slate-50 cursor-pointer') : 'opacity-50 cursor-not-allowed bg-slate-50'} flex justify-between items-center transition" onclick="${t.cantidad > 0 ? `selectSalesArticleOut('${t.id}', event)` : `showToast('AGOTADO', 'error'); if(event) event.stopPropagation();`}">
+                        const available = getSalesOutAvailable(t.id);
+                        return `<div class="p-2 border-b ${available > 0 ? (ex ? 'bg-orange-50 hover:bg-orange-100' : 'hover:bg-slate-50 cursor-pointer') : 'opacity-50 cursor-not-allowed bg-slate-50'} flex justify-between items-center transition" onclick="${available > 0 ? `selectSalesArticleOut('${t.id}', event)` : `showToast('AGOTADO', 'error'); if(event) event.stopPropagation();`}">
                             <div class="flex items-center gap-2 min-w-0"><div class="w-8 h-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0 flex items-center justify-center shadow-sm" onclick="${t.imagen_url ? `openImageViewer('${t.imagen_url}'); if(event) event.stopPropagation();` : ''}">${t.imagen_url ? `<img src="${t.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="package" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="font-bold text-slate-800 uppercase truncate text-[11px] leading-tight mb-0.5">${t.nombre}</p><p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">CÓD: ${t.id_articulo || 'S/C'}</p></div></div>
-                            <div class="flex items-center gap-1.5 ml-2">${ex ? `<span class="text-orange-700 bg-orange-100 border border-orange-200 font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm flex items-center gap-1"><i data-lucide="check" class="w-2.5 h-2.5"></i> (${ex.outQty})</span>` : ''}<span class="${t.cantidad > 0 ? 'text-emerald-700 bg-emerald-100 border border-emerald-200' : 'text-red-700 bg-red-100 border border-red-200'} font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">DISP: ${t.cantidad}</span></div>
+                            <div class="flex items-center gap-1.5 ml-2">${ex ? `<span class="text-orange-700 bg-orange-100 border border-orange-200 font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm flex items-center gap-1"><i data-lucide="check" class="w-2.5 h-2.5"></i> (${ex.outQty})</span>` : ''}<span class="${available > 0 ? 'text-emerald-700 bg-emerald-100 border border-emerald-200' : 'text-red-700 bg-red-100 border border-red-200'} font-black px-1.5 py-0.5 rounded text-[9px] shrink-0 uppercase shadow-sm">DISP: ${available}</span></div>
                         </div>`;
                     }).join('') + `<div class="sticky bottom-0 w-full p-1.5 bg-slate-50 border-t border-slate-200 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"><button type="button" onclick="closeDropdown('sales-out-results', 'sales-out-search')" class="w-full bg-[#ea580c] text-white py-2 rounded-md font-black uppercase tracking-widest text-[10px] hover:bg-orange-700 transition shadow-sm active:scale-[0.98]">APLICAR SELECCIÓN</button></div>`;
                 } else {
@@ -1946,19 +2051,58 @@
             }, 400);
         }
 
-        function selectSalesArticleOut(id, ev) { if(ev) ev.stopPropagation(); const t = articulosVenta.find(i => i.id === id); if(!t || t.cantidad <= 0) return; const ex = selectedSalesOutArticles.find(s => s.id === id); if(ex) { if(ex.outQty < t.cantidad) ex.outQty++; } else { selectedSalesOutArticles.push({...t, outQty: 1}); } renderSelectedSalesOut(); document.getElementById('sales-out-search').dispatchEvent(new Event('input')); }
+        function getSalesOutAvailable(id) {
+            const article = articulosVenta.find(i => i.id === id);
+            let available = article ? Number(article.cantidad || 0) : 0;
+            if (currentEditingSalesOutputId) {
+                const oldOut = salidasVenta.find(x => x.id === currentEditingSalesOutputId);
+                if (oldOut && oldOut.articulo_id === id) available += Number(oldOut.cantidad || 0);
+            }
+            return available;
+        }
+
+        function selectSalesArticleOut(id, ev) {
+            if(ev) ev.stopPropagation();
+            const t = articulosVenta.find(i => i.id === id);
+            const available = getSalesOutAvailable(id);
+            if(!t || available <= 0) { showToast('AGOTADO', 'error'); return; }
+            const ex = selectedSalesOutArticles.find(s => s.id === id);
+            if (currentEditingSalesOutputId && !ex) selectedSalesOutArticles = [];
+            const current = selectedSalesOutArticles.find(s => s.id === id);
+            if(current) {
+                if(current.outQty < available) current.outQty++;
+                else showToast('LÍMITE ALCANZADO', 'error');
+            } else {
+                selectedSalesOutArticles.push({...t, outQty: 1});
+            }
+            renderSelectedSalesOut(); document.getElementById('sales-out-search').dispatchEvent(new Event('input'));
+        }
         function selectSalesArticle(type, id) { const t = articulosVenta.find(i => i.id === id); if(!t) return; document.getElementById(`sales-${type}-article-id`).value = t.id; document.getElementById(`sales-${type}-selected-name`).innerText = t.nombre; document.getElementById(`sales-${type}-search`).value = ''; document.getElementById(`sales-${type}-search`).classList.add('hidden'); document.getElementById(`sales-${type}-results`).classList.add('hidden'); document.getElementById(`sales-${type}-selected`).classList.remove('hidden'); document.getElementById(`sales-${type}-selected`).classList.add('flex'); }
         function clearSalesSelection(type) { document.getElementById(`sales-${type}-article-id`).value = ''; document.getElementById(`sales-${type}-selected`).classList.add('hidden'); document.getElementById(`sales-${type}-selected`).classList.remove('flex'); document.getElementById(`sales-${type}-search`).classList.remove('hidden'); document.getElementById(`sales-${type}-search`).value = ''; }
 
         function renderSelectedSalesOut() {
             const list = document.getElementById('selected-sales-out-list'); if(!list) return;
-            list.innerHTML = selectedSalesOutArticles.map(s => `<div class="flex justify-between items-center bg-white p-1.5 rounded-lg border text-[10px] shadow-sm mb-1.5"><div class="flex items-center gap-2 flex-1 min-w-0"><div class="w-8 h-8 rounded border bg-slate-50 overflow-hidden shrink-0 flex items-center justify-center cursor-pointer" onclick="${s.imagen_url ? `openImageViewer('${s.imagen_url}')` : ''}">${s.imagen_url ? `<img src="${s.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="package" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="truncate uppercase font-bold leading-tight text-slate-700">${s.nombre}</p><p class="text-[9px] ${s.cantidad - s.outQty === 0 ? 'text-red-500' : 'text-slate-400'} font-bold uppercase transition-colors">DISP: ${s.cantidad - s.outQty}</p></div></div><div class="flex items-center gap-1.5 ml-2"><button type="button" class="w-6 h-6 bg-white border border-slate-200 hover:bg-slate-100 transition rounded font-bold" onclick="updSalesOutSel('${s.id}',-1)">-</button><span class="font-black w-4 text-center">${s.outQty}</span><button type="button" class="w-6 h-6 bg-white border border-slate-200 hover:bg-slate-100 transition rounded font-bold" onclick="updSalesOutSel('${s.id}',1)">+</button><button type="button" class="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded transition ml-1" onclick="removeFromSalesOutSelection('${s.id}')" title="QUITAR"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></div>`).join('');
+            list.innerHTML = selectedSalesOutArticles.map(s => {
+                const available = getSalesOutAvailable(s.id);
+                const remaining = available - Number(s.outQty || 0);
+                return `<div class="flex justify-between items-center bg-white p-1.5 rounded-lg border text-[10px] shadow-sm mb-1.5"><div class="flex items-center gap-2 flex-1 min-w-0"><div class="w-8 h-8 rounded border bg-slate-50 overflow-hidden shrink-0 flex items-center justify-center cursor-pointer" onclick="${s.imagen_url ? `openImageViewer('${s.imagen_url}')` : ''}">${s.imagen_url ? `<img src="${s.imagen_url}" loading="lazy" class="w-full h-full object-cover">` : '<i data-lucide="package" class="w-4 h-4 text-slate-300"></i>'}</div><div class="min-w-0"><p class="truncate uppercase font-bold leading-tight text-slate-700">${s.nombre}</p><p class="text-[9px] ${remaining === 0 ? 'text-red-500' : 'text-slate-400'} font-bold uppercase transition-colors">DISP: ${remaining}</p></div></div><div class="flex items-center gap-1.5 ml-2"><button type="button" class="w-6 h-6 bg-white border border-slate-200 hover:bg-slate-100 transition rounded font-bold" onclick="updSalesOutSel('${s.id}',-1)">-</button><span class="font-black w-4 text-center">${s.outQty}</span><button type="button" class="w-6 h-6 bg-white border border-slate-200 hover:bg-slate-100 transition rounded font-bold" onclick="updSalesOutSel('${s.id}',1)">+</button><button type="button" class="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded transition ml-1" onclick="removeFromSalesOutSelection('${s.id}')" title="QUITAR"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></div>`;
+            }).join('');
             if(selectedSalesOutArticles.length === 0) list.innerHTML = '<p class="text-[10px] text-slate-400 text-center uppercase font-bold italic py-1.5 border border-dashed border-slate-200 bg-slate-50 rounded">VACÍO</p>';
             lucide.createIcons();
         }
 
         function removeFromSalesOutSelection(id) { selectedSalesOutArticles = selectedSalesOutArticles.filter(x => x.id !== id); renderSelectedSalesOut(); document.getElementById('sales-out-search').dispatchEvent(new Event('input')); }
-        function updSalesOutSel(id, d) { const s = selectedSalesOutArticles.find(x => x.id === id); const inv = articulosVenta.find(i => i.id === id); if(s && inv) { const n = s.outQty + d; if(n > 0 && n <= inv.cantidad) s.outQty = n; else if(n === 0) return removeFromSalesOutSelection(id); renderSelectedSalesOut(); document.getElementById('sales-out-search').dispatchEvent(new Event('input')); } }
+        function updSalesOutSel(id, d) {
+            const s = selectedSalesOutArticles.find(x => x.id === id);
+            if(s) {
+                const maxAvailable = getSalesOutAvailable(id);
+                const n = Number(s.outQty || 0) + d;
+                if(n > 0 && n <= maxAvailable) s.outQty = n;
+                else if(n > maxAvailable) showToast('LÍMITE ALCANZADO', 'error');
+                else if(n === 0) return removeFromSalesOutSelection(id);
+                renderSelectedSalesOut(); document.getElementById('sales-out-search').dispatchEvent(new Event('input'));
+            }
+        }
 
         // ==========================================
         //  GESTOR DE SUBIDA A STORAGE (NUEVO)
@@ -2021,27 +2165,82 @@
         }
 
         async function handleSalesOutputSubmit(e) {
-            e.preventDefault(); if(selectedSalesOutArticles.length === 0) { showToast('SELECCIONA ARTÍCULOS', 'error'); return; }
-            const uso = document.getElementById('sales-out-uso').value.trim().toUpperCase(); const recibe = document.getElementById('sales-out-recibe').value.trim().toUpperCase(); const fecha = new Date().toLocaleDateString('es-ES');
-            const btn = document.querySelector('#form-sales-output button[type="submit"]'); btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> GUARDANDO...'; btn.disabled = true; lucide.createIcons();
+            e.preventDefault();
+            if(selectedSalesOutArticles.length === 0) { showToast('SELECCIONA ARTÍCULOS', 'error'); return; }
+            const uso = document.getElementById('sales-out-uso').value.trim().toUpperCase();
+            const recibe = document.getElementById('sales-out-recibe').value.trim().toUpperCase();
+            const fecha = new Date().toLocaleDateString('es-ES');
+            const btn = document.querySelector('#form-sales-output button[type="submit"]');
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> GUARDANDO...';
+            btn.disabled = true; lucide.createIcons();
             try {
                 if (currentEditingSalesOutputId) {
-                    const s = selectedSalesOutArticles[0]; const oldOut = salidasVenta.find(x => x.id === currentEditingSalesOutputId); const article = articulosVenta.find(a => a.id === s.id); const diff = s.outQty - oldOut.cantidad;
-                    if(oldOut) { oldOut.cantidad = s.outQty; oldOut.para_uso_en = uso; oldOut.recibe = recibe; }
-                    if(article) article.cantidad -= diff;
-                    await Promise.all([ supabaseClient.from('salidas_articulos').update({ cantidad: s.outQty, para_uso_en: uso, recibe: recibe }).eq('id', currentEditingSalesOutputId), supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad - diff }).eq('id', article.id) ]);
+                    if (!isCurrentAdmin()) { showToast('SOLO ADMIN PUEDE EDITAR', 'error'); return; }
+                    if (selectedSalesOutArticles.length !== 1) { showToast('EDITA UN SOLO REGISTRO', 'error'); return; }
+
+                    const s = selectedSalesOutArticles[0];
+                    const oldOut = salidasVenta.find(x => x.id === currentEditingSalesOutputId);
+                    if (!oldOut) { showToast('REGISTRO NO ENCONTRADO', 'error'); return; }
+
+                    const oldQty = Number(oldOut.cantidad || 0);
+                    const newQty = Number(s.outQty || 0);
+                    const oldArticle = articulosVenta.find(a => a.id === oldOut.articulo_id);
+                    const newArticle = articulosVenta.find(a => a.id === s.id);
+                    if (!newArticle || newQty <= 0) { showToast('ARTÍCULO INVÁLIDO', 'error'); return; }
+
+                    const updates = [
+                        supabaseClient.from('salidas_articulos').update({
+                            articulo_id: s.id,
+                            nombre_articulo: s.nombre,
+                            cantidad: newQty,
+                            para_uso_en: uso,
+                            recibe: recibe
+                        }).eq('id', currentEditingSalesOutputId)
+                    ];
+
+                    if (oldOut.articulo_id === s.id) {
+                        const newStock = Number(newArticle.cantidad || 0) - (newQty - oldQty);
+                        if (newStock < 0) { showToast('STOCK INSUFICIENTE', 'error'); return; }
+                        newArticle.cantidad = newStock;
+                        updates.push(supabaseClient.from('articulos_venta').update({ cantidad: newStock }).eq('id', newArticle.id));
+                    } else {
+                        if (oldArticle) {
+                            const restoredStock = Number(oldArticle.cantidad || 0) + oldQty;
+                            oldArticle.cantidad = restoredStock;
+                            updates.push(supabaseClient.from('articulos_venta').update({ cantidad: restoredStock }).eq('id', oldArticle.id));
+                        }
+                        const newStock = Number(newArticle.cantidad || 0) - newQty;
+                        if (newStock < 0) { showToast('STOCK INSUFICIENTE', 'error'); return; }
+                        newArticle.cantidad = newStock;
+                        updates.push(supabaseClient.from('articulos_venta').update({ cantidad: newStock }).eq('id', newArticle.id));
+                    }
+
+                    oldOut.articulo_id = s.id;
+                    oldOut.nombre_articulo = s.nombre;
+                    oldOut.cantidad = newQty;
+                    oldOut.para_uso_en = uso;
+                    oldOut.recibe = recibe;
+                    await Promise.all(updates);
+                    showToast('SALIDA ACTUALIZADA');
                 } else {
                     const inserts = []; const updates = [];
                     for(const s of selectedSalesOutArticles) {
                         const newRecord = { id: generateID('SAL'), articulo_id: s.id, nombre_articulo: s.nombre, cantidad: s.outQty, fecha, supervisor: currentUserName.toUpperCase(), para_uso_en: uso, recibe };
                         inserts.push(newRecord);
                         salidasVenta.unshift(newRecord);
-                        const a = articulosVenta.find(x => x.id === s.id); if(a) { updates.push(supabaseClient.from('articulos_venta').update({ cantidad: a.cantidad - s.outQty }).eq('id', s.id)); a.cantidad -= s.outQty; }
+                        const a = articulosVenta.find(x => x.id === s.id);
+                        if(a) {
+                            const newStock = Number(a.cantidad || 0) - Number(s.outQty || 0);
+                            if (newStock < 0) { showToast('STOCK INSUFICIENTE', 'error'); return; }
+                            updates.push(supabaseClient.from('articulos_venta').update({ cantidad: newStock }).eq('id', s.id));
+                            a.cantidad = newStock;
+                        }
                     }
                     await Promise.all([ supabaseClient.from('salidas_articulos').insert(inserts), ...updates ]);
+                    showToast('SALIDA REGISTRADA');
                 }
-                renderReports(); renderSalesCatalog();
-                showToast('SALIDA REGISTRADA'); closeModal('modal-sales-output'); fetchInitialData(); if(currentUserRole === 'supervisor') switchView('reports');
+                renderReports(); renderSalesCatalog(); renderReceived(); updateApplicantDatalists(); saveLocalData();
+                closeModal('modal-sales-output'); fetchInitialData(); if(isCurrentSupervisor()) switchView('reports');
             } catch(err) { console.error(err); showToast('ERROR', 'error'); } finally { btn.innerHTML = 'REGISTRAR SALIDA'; btn.disabled = false; }
         }
 
@@ -2147,6 +2346,7 @@
         }
 
         function confirmDeletion(id, type) {
+            if ((type === 'salesOutput' || type === 'salesInput') && !isCurrentAdmin()) { showToast('SOLO ADMIN PUEDE ELIMINAR', 'error'); return; }
             itemToDelete = id; deleteType = type; const title = document.getElementById('confirm-title'); const desc = document.getElementById('confirm-desc'); const btn = document.getElementById('confirm-action-btn');
             if(type === 'tool') { title.innerText = '¿ELIMINAR?'; desc.innerText = 'SE BORRARÁ DEL INVENTARIO.'; btn.onclick = executeDeleteTool; }
             else if(type === 'loan') { title.innerText = '¿ELIMINAR?'; desc.innerText = 'VOLVERÁ AL INVENTARIO.'; btn.onclick = () => executeDeleteLoanRecord(id); }
@@ -2160,7 +2360,28 @@
         async function executeDeleteLoanRecord(id) { const l = loans.find(x => x.id === id); if(!l) return; try { const promises = [supabaseClient.from('registro_prestamos').delete().eq('id', id)]; if (l.status === 'activo') { for (const t of l.tools) { const inv = inventory.find(i => i.id_articulo === t.id_articulo); if (inv) promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad + t.borrowQty }).eq('id_articulo', t.id_articulo)); } } await Promise.all(promises); showToast('ELIMINADO'); fetchInitialData(); } catch (err) { console.error(err); } closeModal('modal-confirm'); closeModal('modal-history'); }
         async function executeDeleteSalesItem() { if(!itemToDelete) return; try { const {error} = await supabaseClient.from('articulos_venta').delete().eq('id', itemToDelete); if(error) throw error; articulosVenta = articulosVenta.filter(x => x.id !== itemToDelete); currentSalesSearchResults = currentSalesSearchResults.filter(x => x.id !== itemToDelete); showToast('ELIMINADO'); renderSalesCatalog(); saveLocalData(); fetchInitialData(); } catch (err) { console.error(err); if(err.message?.includes('replica identity')) showToast('FALTA REPLICA IDENTITY EN DB', 'error'); } closeModal('modal-confirm'); }
         async function executeDeleteSalesInput() { if(!itemToDelete) return; const entry = entradasVenta.find(e => e.id === itemToDelete); if(!entry) return; const article = articulosVenta.find(a => a.id === entry.articulo_id); try { const promises = [supabaseClient.from('entradas_articulos').delete().eq('id', itemToDelete)]; if(article) promises.push(supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad - entry.cantidad }).eq('id', article.id)); await Promise.all(promises); showToast('ELIMINADA'); fetchInitialData(); } catch (err) { console.error(err); } closeModal('modal-confirm'); }
-        async function executeDeleteSalesOutput() { if(!itemToDelete) return; const output = salidasVenta.find(e => e.id === itemToDelete); if(!output) return; const article = articulosVenta.find(a => a.id === output.articulo_id); try { const promises = [supabaseClient.from('salidas_articulos').delete().eq('id', itemToDelete)]; if(article) promises.push(supabaseClient.from('articulos_venta').update({ cantidad: article.cantidad + output.cantidad }).eq('id', article.id)); await Promise.all(promises); showToast('ELIMINADA'); fetchInitialData(); } catch (err) { console.error(err); } closeModal('modal-confirm'); }
+        async function executeDeleteSalesOutput() {
+            if(!itemToDelete) return;
+            if (!isCurrentAdmin()) { showToast('SOLO ADMIN PUEDE ELIMINAR', 'error'); closeModal('modal-confirm'); return; }
+            const output = salidasVenta.find(e => e.id === itemToDelete);
+            if(!output) { closeModal('modal-confirm'); return; }
+            const article = articulosVenta.find(a => a.id === output.articulo_id);
+            try {
+                const qty = Number(output.cantidad || 0);
+                const promises = [supabaseClient.from('salidas_articulos').delete().eq('id', itemToDelete)];
+                if(article) {
+                    const restoredStock = Number(article.cantidad || 0) + qty;
+                    promises.push(supabaseClient.from('articulos_venta').update({ cantidad: restoredStock }).eq('id', article.id));
+                    article.cantidad = restoredStock;
+                }
+                await Promise.all(promises);
+                salidasVenta = salidasVenta.filter(e => e.id !== itemToDelete);
+                renderSalesCatalog(); renderReports(); renderReceived(); saveLocalData();
+                showToast('SALIDA ELIMINADA Y STOCK RESTAURADO');
+                fetchInitialData();
+            } catch (err) { console.error(err); showToast('ERROR AL ELIMINAR', 'error'); }
+            closeModal('modal-confirm');
+        }
 
         function editTool(id) { const t = inventory.find(x => x.id_articulo === id); if(!t) return; currentEditingToolId = id; document.getElementById('tool-id').value = t.id_articulo; document.getElementById('tool-name').value = t.nombre; document.getElementById('tool-qty').value = t.cantidad; document.getElementById('tool-shelf').value = t.estante || ''; document.getElementById('tool-row').value = t.fila || ''; openModal('modal-tool'); }
         function editLoan(id) { const l = loans.find(x => x.id === id); if (!l) return; currentEditingLoanId = id; document.getElementById('loan-applicant').value = l.applicant; document.getElementById('loan-deliverer').value = l.deliverer; selectedToolsForLoan = JSON.parse(JSON.stringify(l.tools)); renderSelectedTools(); closeModal('modal-history'); openModal('modal-loan'); }
@@ -2169,7 +2390,19 @@
         async function returnSingleTool(loanId, toolId) { const l = loans.find(x => x.id === loanId); if(!l) return; const tIndex = l.tools.findIndex(t => t.id_articulo === toolId); if(tIndex === -1) return; const t = l.tools[tIndex]; try { l.tools.splice(tIndex, 1); if (l.tools.length === 0) l.status = 'devuelto'; const inv = inventory.find(i => i.id_articulo === toolId); const promises = []; if (inv) { inv.cantidad += t.borrowQty; promises.push(supabaseClient.from('inventory').update({ cantidad: inv.cantidad }).eq('id_articulo', toolId)); } if (l.tools.length === 0) { promises.push(supabaseClient.from('registro_prestamos').update({ estado: 'devuelto', herramientas: l.tools }).eq('id', loanId)); } else { promises.push(supabaseClient.from('registro_prestamos').update({ herramientas: l.tools }).eq('id', loanId)); } renderLoans(); renderInventory(); updateStats(); showToast('ARTÍCULO RECIBIDO'); await Promise.all(promises); fetchInitialData(); } catch(err) { console.error(err); } }
         function editSalesItem(id) { const i = articulosVenta.find(x => x.id === id); if(!i) return; currentEditingSalesItemId = i.id; document.getElementById('sales-item-id').value = i.id; document.getElementById('sales-item-code').value = i.id_articulo || ''; document.getElementById('sales-item-name').value = i.nombre; document.getElementById('sales-item-qty').value = i.cantidad; openModal('modal-sales-item'); }
         function editSalesInput(id) { const e = entradasVenta.find(x => x.id === id); if(!e) return; currentEditingSalesInputId = id; closeModal('modal-sales-history'); openModal('modal-sales-input'); selectSalesArticle('in', e.articulo_id); document.getElementById('sales-in-qty').value = e.cantidad; const dp = e.fecha.split('/'); if(dp.length === 3) document.getElementById('sales-in-date').value = `${dp[2]}-${dp[1]}-${dp[0]}`; }
-        function editSalesOutput(id) { const s = salidasVenta.find(x => x.id === id); if(!s) return; currentEditingSalesOutputId = id; closeModal('modal-sales-history'); openModal('modal-sales-output'); selectedSalesOutArticles = []; const a = articulosVenta.find(x => x.id === s.articulo_id); if(a) { selectedSalesOutArticles.push({...a, outQty: s.cantidad}); renderSelectedSalesOut(); } document.getElementById('sales-out-uso').value = s.para_uso_en || ''; document.getElementById('sales-out-recibe').value = s.recibe || ''; }
+        function editSalesOutput(id) {
+            if (!isCurrentAdmin()) { showToast('SOLO ADMIN PUEDE EDITAR', 'error'); return; }
+            const s = salidasVenta.find(x => x.id === id);
+            if(!s) { showToast('REGISTRO NO ENCONTRADO', 'error'); return; }
+            currentEditingSalesOutputId = id;
+            closeModal('modal-sales-history'); openModal('modal-sales-output');
+            selectedSalesOutArticles = [];
+            const a = articulosVenta.find(x => x.id === s.articulo_id);
+            if(a) { selectedSalesOutArticles.push({...a, outQty: Number(s.cantidad || 0)}); renderSelectedSalesOut(); }
+            document.getElementById('sales-out-uso').value = s.para_uso_en || '';
+            document.getElementById('sales-out-recibe').value = s.recibe || '';
+            const search = document.getElementById('sales-out-search'); if(search) search.value = '';
+        }
         function editUserForm(id) { const u = systemUsers.find(x => x.id === id); if(!u) return; currentEditingUserId = id; document.getElementById('new-user-name').value = u.nombre_completo || ''; const em = document.getElementById('new-user-email'); em.value = u.email; em.readOnly = true; em.classList.add('opacity-50'); const pa = document.getElementById('new-user-pass'); pa.required = false; pa.value = ''; document.getElementById('new-user-rol').value = u.rol || 'usuario'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
         function resetUserForm() { document.getElementById('form-user').reset(); currentEditingUserId = null; const em = document.getElementById('new-user-email'); em.readOnly = false; em.classList.remove('opacity-50'); document.getElementById('new-user-pass').required = true; }
         function getElapsedDays(ts) { return Math.floor((new Date() - new Date(ts)) / 86400000); }
@@ -2185,7 +2418,7 @@
             else {
                 hist.forEach(l => {
                     const isP = l.status === 'activo'; const te = l.tools.find(t => t.id_articulo === id_articulo);
-                    const actions = currentUserRole !== 'supervisor' ? `<div class="flex gap-1"><button onclick="event.stopPropagation(); editLoan('${l.id}')" class="p-1 hover:bg-white rounded transition text-slate-400 hover:text-blue-600"><i data-lucide="pencil" class="w-3 h-3"></i></button><button onclick="event.stopPropagation(); confirmDeletion('${l.id}', 'loan')" class="p-1 hover:bg-white rounded transition text-slate-400 hover:text-red-600"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div>` : '';
+                    const actions = !isCurrentSupervisor() ? `<div class="flex gap-1"><button onclick="event.stopPropagation(); editLoan('${l.id}')" class="p-1 hover:bg-white rounded transition text-slate-400 hover:text-blue-600"><i data-lucide="pencil" class="w-3 h-3"></i></button><button onclick="event.stopPropagation(); confirmDeletion('${l.id}', 'loan')" class="p-1 hover:bg-white rounded transition text-slate-400 hover:text-red-600"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div>` : '';
                     content.innerHTML += `<div class="p-2.5 rounded-lg border ${isP ? 'border-red-100 bg-red-50' : 'border-emerald-100 bg-emerald-50'} shadow-sm mb-2"><div class="flex justify-between items-start mb-1"><span class="text-[8px] font-black uppercase ${isP ? 'text-red-600' : 'text-emerald-600'}">${isP ? 'PENDIENTE' : 'DEVUELTO'}</span><div class="flex items-center gap-1.5"><span class="text-[8px] font-bold text-slate-400">${l.date}</span>${actions}</div></div><p class="text-[11px] font-black text-slate-800 uppercase mb-0.5">${l.applicant}</p><p class="text-[9px] text-slate-500 font-bold uppercase">CANT: ${te.borrowQty} | ENTREGÓ: ${l.deliverer}</p></div>`;
                 });
             }
@@ -2199,22 +2432,28 @@
             const v = document.getElementById('sales-history-qty'); v.innerText = article.cantidad;
             document.getElementById('sales-history-qty-container').className = article.cantidad > 0 ? 'p-4 border-b border-emerald-100 bg-emerald-50/50 text-center text-emerald-600' : 'p-4 border-b border-red-100 bg-red-50/50 text-center text-red-600';
             const w = document.getElementById('sales-history-warning'); if(article.cantidad > 0) w.classList.add('hidden'); else { w.classList.remove('hidden'); w.innerHTML = 'REPONER STOCK'; }
-            if (currentUserRole === 'admin') switchHistoryTab('in'); else switchHistoryTab('out');
+            if (isCurrentAdmin()) switchHistoryTab('in'); else switchHistoryTab('out');
             
             const inC = document.getElementById('sales-history-in-content'); const outC = document.getElementById('sales-history-out-content'); inC.innerHTML = ''; outC.innerHTML = '';
             
             // Entradas se filtran de la memoria porque se cargan al inicio
             const rIn = entradasVenta.filter(e => e.articulo_id === itemId); 
             if(rIn.length===0) inC.innerHTML = '<p class="text-[9px] text-slate-400 font-bold text-center">VACÍO</p>';
-            else rIn.forEach(m => { const ac = currentUserRole === 'admin' ? `<div class="flex gap-1 pl-1.5"><button onclick="editSalesInput('${m.id}')"><i data-lucide="pencil" class="w-3 h-3 text-indigo-400 hover:text-indigo-600"></i></button><button onclick="confirmDeletion('${m.id}', 'salesInput')"><i data-lucide="trash-2" class="w-3 h-3 text-indigo-400 hover:text-red-500"></i></button></div>` : ''; inC.innerHTML += `<div class="p-2 border border-indigo-100 bg-indigo-50/30 rounded mb-1.5"><div class="flex justify-between items-center"><span class="text-[8px] font-black text-indigo-600">ENTRADA</span><div class="flex items-center gap-1"><span class="text-[8px] text-slate-400">${m.fecha}</span>${ac}</div></div><p class="text-sm font-black">+${m.cantidad}</p></div>`; });
+            else rIn.forEach(m => { const ac = isCurrentAdmin() ? `<div class="flex gap-1 pl-1.5"><button onclick="editSalesInput('${m.id}')"><i data-lucide="pencil" class="w-3 h-3 text-indigo-400 hover:text-indigo-600"></i></button><button onclick="confirmDeletion('${m.id}', 'salesInput')"><i data-lucide="trash-2" class="w-3 h-3 text-indigo-400 hover:text-red-500"></i></button></div>` : ''; inC.innerHTML += `<div class="p-2 border border-indigo-100 bg-indigo-50/30 rounded mb-1.5"><div class="flex justify-between items-center"><span class="text-[8px] font-black text-indigo-600">ENTRADA</span><div class="flex items-center gap-1"><span class="text-[8px] text-slate-400">${m.fecha}</span>${ac}</div></div><p class="text-sm font-black">+${m.cantidad}</p></div>`; });
             
             // Salidas se consultan dinámicamente a Supabase (Más ligero y preciso)
             outC.innerHTML = '<p class="text-[9px] text-slate-400 font-bold text-center flex items-center justify-center gap-1"><i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> CARGANDO...</p>';
             supabaseClient.from('salidas_articulos').select('*').eq('articulo_id', itemId).order('created_at', { ascending: false }).then(({data}) => {
                 outC.innerHTML = '';
                 const rOut = data || [];
+                rOut.forEach(record => {
+                    const idx = salidasVenta.findIndex(x => x.id === record.id);
+                    if (idx !== -1) salidasVenta[idx] = record;
+                    else salidasVenta.unshift(record);
+                });
+                saveLocalData();
                 if(rOut.length===0) outC.innerHTML = '<p class="text-[9px] text-slate-400 font-bold text-center">VACÍO</p>';
-                else rOut.forEach(m => { const ac = currentUserRole === 'admin' ? `<div class="flex gap-1 pl-1.5"><button onclick="editSalesOutput('${m.id}')"><i data-lucide="pencil" class="w-3 h-3 text-orange-400 hover:text-orange-600"></i></button><button onclick="confirmDeletion('${m.id}', 'salesOutput')"><i data-lucide="trash-2" class="w-3 h-3 text-orange-400 hover:text-red-500"></i></button></div>` : ''; outC.innerHTML += `<div class="p-2 border border-orange-100 bg-orange-50/30 rounded mb-1.5"><div class="flex justify-between items-center"><span class="text-[8px] font-black text-orange-600">SALIDA</span><div class="flex items-center gap-1"><span class="text-[8px] text-slate-400">${m.fecha}</span>${ac}</div></div><p class="text-sm font-black">-${m.cantidad}</p><p class="text-[7px] text-slate-500 mt-1 uppercase">USO: ${m.para_uso_en||'N/A'} | RECIBE: ${m.recibe}</p></div>`; });
+                else rOut.forEach(m => { const ac = isCurrentAdmin() ? `<div class="flex gap-1 pl-1.5"><button onclick="editSalesOutput('${m.id}')"><i data-lucide="pencil" class="w-3 h-3 text-orange-400 hover:text-orange-600"></i></button><button onclick="confirmDeletion('${m.id}', 'salesOutput')"><i data-lucide="trash-2" class="w-3 h-3 text-orange-400 hover:text-red-500"></i></button></div>` : ''; outC.innerHTML += `<div class="p-2 border border-orange-100 bg-orange-50/30 rounded mb-1.5"><div class="flex justify-between items-center"><span class="text-[8px] font-black text-orange-600">SALIDA</span><div class="flex items-center gap-1"><span class="text-[8px] text-slate-400">${m.fecha}</span>${ac}</div></div><p class="text-sm font-black">-${m.cantidad}</p><p class="text-[7px] text-slate-500 mt-1 uppercase">USO: ${m.para_uso_en||'N/A'} | RECIBE: ${m.recibe}</p></div>`; });
                 lucide.createIcons();
             });
 
@@ -2257,7 +2496,13 @@
             const el = document.getElementById(id); el.classList.remove('hidden'); el.classList.add('flex'); 
             if(id==='modal-tool'){ document.getElementById('modal-tool-title').innerText = currentEditingToolId?'EDITAR HERRAMIENTA':'AGREGAR HERRAMIENTA'; }
             if(id==='modal-loan'){ document.getElementById('modal-loan-title').innerText = currentEditingLoanId?'EDITAR PRÉSTAMO':'NUEVO PRÉSTAMO'; document.getElementById('modal-loan-submit').innerText = currentEditingLoanId?'GUARDAR':'REGISTRAR'; if(!currentEditingLoanId)resetLoanForm(); }
-            if(id==='modal-sales-output'){ if(!currentEditingSalesOutputId){ selectedSalesOutArticles=[]; renderSelectedSalesOut(); document.getElementById('sales-out-uso').value=''; document.getElementById('sales-out-recibe').value=''; } }
+            if(id==='modal-sales-output'){
+                const title = document.querySelector('#modal-sales-output h3');
+                const submit = document.querySelector('#form-sales-output button[type="submit"]');
+                if(title) title.innerText = currentEditingSalesOutputId ? 'EDITAR SALIDA' : 'REGISTRAR SALIDA';
+                if(submit) submit.innerText = currentEditingSalesOutputId ? 'GUARDAR CAMBIOS' : 'REGISTRAR SALIDA';
+                if(!currentEditingSalesOutputId){ selectedSalesOutArticles=[]; renderSelectedSalesOut(); document.getElementById('sales-out-uso').value=''; document.getElementById('sales-out-recibe').value=''; }
+            }
         }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); if(id==='modal-tool') { currentEditingToolId=null; document.getElementById('form-tool').reset(); } if(id==='modal-loan') currentEditingLoanId=null; if(id==='modal-sales-item') { currentEditingSalesItemId=null; document.getElementById('form-sales-item').reset(); } if(id==='modal-sales-input') { currentEditingSalesInputId=null; document.getElementById('form-sales-input').reset(); clearSalesSelection('in'); setCurrentDateInputs(); } if(id==='modal-sales-output') { currentEditingSalesOutputId=null; document.getElementById('form-sales-output').reset(); } }
         function openImageViewer(s) { const v = document.getElementById('modal-image-viewer'); const i = document.getElementById('full-screen-image'); i.src = s; v.classList.remove('hidden'); v.classList.add('flex'); }
