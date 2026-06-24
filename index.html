@@ -1231,6 +1231,7 @@
 <th class="p-3">CONSUMIBLE</th>
 <th class="p-3">USO</th>
 <th class="p-3">RESPONSABLE</th>
+<th class="p-3 text-center w-[120px]">ENTREGA</th>
 <th class="p-3 text-right admin-only w-[150px]">ACCIONES</th>
 </tr>
 </thead>
@@ -2263,6 +2264,32 @@
         }
 
         let receivedDateOffset = 0;
+        const VIRTUAL_DELIVERED_OUTPUTS_KEY = 'inventario_taller_salidas_entregadas_virtuales_v1';
+
+        function getVirtualDeliveredOutputIds() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(VIRTUAL_DELIVERED_OUTPUTS_KEY) || '[]');
+                return new Set(Array.isArray(saved) ? saved.map(String) : []);
+            } catch (error) {
+                console.warn('No se pudo leer el estado virtual de entregas:', error);
+                return new Set();
+            }
+        }
+
+        function markSalesOutputDeliveredVirtual(outputId) {
+            const deliveredIds = getVirtualDeliveredOutputIds();
+            deliveredIds.add(String(outputId));
+
+            try {
+                localStorage.setItem(VIRTUAL_DELIVERED_OUTPUTS_KEY, JSON.stringify([...deliveredIds]));
+            } catch (error) {
+                console.warn('No se pudo guardar el estado virtual de entregas:', error);
+            }
+
+            showToast('REGISTRO MARCADO COMO ENTREGADO', 'success');
+            renderReceived();
+        }
+
         function changeReceivedDate(delta) { receivedDateOffset += delta; renderReceived(); }
 
         function getSalesDateVariants(date) {
@@ -2307,7 +2334,7 @@
             if(!tbody) return;
 
             const isAdmin = String(currentUserRole || '').toLowerCase() === 'admin';
-            const colspan = isAdmin ? 6 : 5;
+            const colspan = isAdmin ? 7 : 6;
             
             const targetDate = new Date();
             targetDate.setDate(targetDate.getDate() + receivedDateOffset);
@@ -2322,10 +2349,15 @@
 
             tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">CARGANDO SALIDAS DE CONSUMIBLES...</td></tr>`;
 
-            const filtered = await getConsumableOutputsByDate(targetDate);
+            const deliveredIds = getVirtualDeliveredOutputIds();
+            const outputsForDate = await getConsumableOutputsByDate(targetDate);
+            const filtered = outputsForDate.filter(record => !deliveredIds.has(String(record.id)));
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">NO HAY SALIDAS DE CONSUMIBLES EL ${receivedDateOffset === 0 ? 'DÍA DE HOY' : targetDateStr}.</td></tr>`;
+                const emptyMessage = outputsForDate.length > 0
+                    ? 'TODOS LOS REGISTROS DE ESTA FECHA FUERON MARCADOS COMO ENTREGADOS EN ESTE DISPOSITIVO.'
+                    : `NO HAY SALIDAS DE CONSUMIBLES EL ${receivedDateOffset === 0 ? 'DÍA DE HOY' : targetDateStr}.`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[9px]">${emptyMessage}</td></tr>`;
                 return;
             }
 
@@ -2350,6 +2382,11 @@
                     </td>
                     <td class="p-3 text-[10px] text-slate-600 font-bold">${s.para_uso_en || 'N/A'}</td>
                     <td class="p-3 text-[10px] text-slate-500 font-black">${s.supervisor || 'N/A'}</td>
+                    <td class="p-3 text-center whitespace-nowrap">
+                        <button onclick="markSalesOutputDeliveredVirtual('${s.id}')" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white border border-emerald-700 hover:bg-emerald-700 transition text-[9px] font-black uppercase shadow-sm" title="Ocultar este registro como entregado solo en este dispositivo">
+                            <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Entregado
+                        </button>
+                    </td>
                     ${actionTd}
                 </tr>
                 `;
@@ -2898,4 +2935,5 @@
     </script>
 </body>
 </html>
+
 
